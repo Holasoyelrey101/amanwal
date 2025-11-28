@@ -1,0 +1,1043 @@
+/* ============ Contenedor Principal ============ */
+.cabin-detail-container {
+  background: #ffffff;
+  min-height: 100vh;
+  padding: 0;
+}
+
+/* ============ Header Top - Título y Ubicación ============ */
+.cabin-header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.cabin-header-info h1 {
+  font-size: 18px;
+  font-weight: 800;
+  margin: 0 0 2px 0;
+  color: #222;
+}
+
+.cabin-location-badge {
+  font-size: 12px;
+  color: #666;
+  font-weight: 500;
+}
+
+.cabin-share-btn {
+  padding: 8px 16px;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  color: #222;
+  transition: all 0.3s ease;
+}
+
+.cabin-share-btn:hover {
+  border-color: #222;
+  background: #f7f7f7;
+}
+
+/* ============ Galería de Imágenes ============ */
+.cabin-gallery-grid {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 3px;
+  padding: 5px 10px;
+  background: #f7f7f7;
+  min-height: 140px;
+}
+
+.gallery-main-large {
+  position: relative;
+  border-radius: 5px;
+  overflow: hidden;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+  border: 2px solid #0f3460;
+}
+
+.gallery-main-large img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.gallery-main-large:hover img {
+  transform: scale(1.05);
+}
+
+.gallery-counter {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.gallery-thumbnails-vertical {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 3px;
+}
+
+.gallery-thumb-item {
+  position: relative;
+  border-radius: 3px;
+  overflow: hidden;
+  cursor: pointer;
+  height: 100%;
+  min-height: 60px;
+}
+
+.gallery-thumb-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.gallery-thumb-item:hover img {
+  transform: scale(1.08);
+}
+
+.gallery-thumb-item.see-all {
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.see-all-overlay {
+  color: white;
+  text-align: center;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+/* ============ Contenido Principal ============ */
+.cabin-main-content {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 12px;
+  padding: 12px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* ============ Sección de Descripción ============ */
+.cabin-description-section {
+  padding-right: 5px;
+}
+
+.cabin-description-section h2 {
+  font-size: 15px;
+  font-weight: 800;
+  margin: 0 0 5px 0;
+  color: #222;
+}
+
+.cabin-description-section p {
+  font-size: 11px;
+  line-height: 1.4;
+  color: #666;
+  margin: 0;
+}
+
+/* ============ Características en Grid ============ */
+.cabin-features-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 6px;
+  margin-top: 5px;
+}
+
+.feature-item {
+  display: flex;
+  gap: 8px;
+  padding: 8px;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  align-items: flex-start;
+}
+
+.feature-icon {
+  font-size: 24px;
+  min-width: 28px;
+}
+
+.feature-label {
+  font-size: 11px;
+  color: #999;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.feature-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: #222;
+  margin-top: 2px;
+}
+
+/* ============ Sidebar de Reserva ============ */
+.cabin-booking-sidebar {
+  position: sticky;
+  top: 20px;
+  height: fit-content;
+}
+
+.booking-card {
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 10px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+  background: white;
+}
+
+.price-section {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.price-display {
+  display: flex;
+  align-items: baseline;
+}
+
+.currency {
+  font-size: 16px;
+  font-weight: 600;
+  color: #222;
+}
+
+.amount {
+  font-size: 22px;
+  font-weight: 800;
+  color: #222;
+}
+
+.price-period {
+  font-size: 14px;
+  color: #999;
+  font-weight: 500;
+}
+
+.reserve-button {
+  width: 100%;
+  padding: 7px 10px;
+  background: linear-gradient(135deg, #FF385C 0%, #E31C23 100%);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: 5px;
+}
+
+.reserve-button:hover {
+  box-shadow: 0 8px 24px rgba(255, 56, 92, 0.3);
+  transform: translateY(-2px);
+}
+
+.reserve-note {
+  font-size: 9px;
+  color: #666;
+  text-align: center;
+  margin: 0 0 8px 0;
+}
+
+.booking-features {
+  border-top: 1px solid #e0e0e0;
+  padding-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.booking-feature {
+  font-size: 10px;
+  color: #222;
+  font-weight: 500;
+}
+
+/* ============ Lightbox ============ */
+.lightbox-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.95);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  backdrop-filter: blur(5px);
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.lightbox-container {
+  position: relative;
+  width: 90vw;
+  height: 90vh;
+  max-width: 1200px;
+  max-height: 800px;
+}
+
+.lightbox-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.lightbox-close {
+  position: absolute;
+  top: -40px;
+  right: 0;
+  background: none;
+  border: none;
+  color: white;
+  font-size: 32px;
+  cursor: pointer;
+  font-weight: 300;
+  transition: all 0.3s ease;
+}
+
+.lightbox-close:hover {
+  color: #ccc;
+}
+
+.lightbox-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.3);
+  border: none;
+  color: white;
+  font-size: 40px;
+  width: 50px;
+  height: 50px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+  font-weight: 300;
+}
+
+.lightbox-nav:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.lightbox-nav-prev {
+  left: -60px;
+}
+
+.lightbox-nav-next {
+  right: -60px;
+}
+
+.lightbox-counter {
+  position: absolute;
+  bottom: -40px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* ============ Responsive ============ */
+@media (max-width: 1024px) {
+  .cabin-gallery-grid {
+    grid-template-columns: 1fr;
+    min-height: 400px;
+  }
+
+  .cabin-main-content {
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
+
+  .cabin-booking-sidebar {
+    position: static;
+  }
+
+  .cabin-header-top {
+    padding: 16px 24px;
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .cabin-header-info h1 {
+    font-size: 24px;
+  }
+}
+
+@media (max-width: 768px) {
+  .cabin-gallery-grid {
+    gap: 8px;
+    padding: 12px;
+  }
+
+  .gallery-thumbnails-vertical {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .cabin-main-content {
+    padding: 20px;
+    gap: 20px;
+  }
+
+  .cabin-header-top {
+    padding: 12px 16px;
+  }
+
+  .cabin-header-info h1 {
+    font-size: 20px;
+  }
+
+  .cabin-description-section {
+    padding-right: 0;
+  }
+
+  .booking-card {
+    padding: 16px;
+  }
+
+  .reserve-button {
+    padding: 10px 16px;
+    font-size: 14px;
+  }
+}
+.cabin-top-section {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  margin-bottom: 0;
+  align-items: flex-start;
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  height: calc(100vh - 100px);
+}
+
+/* Sección con galería y botón reservar */
+.cabin-gallery-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex-shrink: 0;
+}
+  flex-shrink: 0;
+  width: 300px;
+  height: 300px;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+  transition: all 0.3s ease;
+}
+
+.cabin-gallery:hover {
+  box-shadow: 0 25px 70px rgba(0, 0, 0, 0.5);
+  transform: translateY(-8px);
+}
+
+.cabin-gallery-main {
+  position: relative;
+  width: 100%;
+  padding-bottom: 100%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.cabin-gallery-main:hover img {
+  transform: scale(1.08);
+}
+
+.cabin-gallery-main img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.cabin-gallery-thumbnails {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  scroll-behavior: smooth;
+  backdrop-filter: blur(10px);
+}
+
+.cabin-gallery-thumbnails::-webkit-scrollbar {
+  height: 4px;
+}
+
+.cabin-gallery-thumbnails::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+
+.cabin-gallery-thumbnails::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 10px;
+}
+
+.cabin-gallery-thumbnails::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.cabin-thumb {
+  flex-shrink: 0;
+  width: 70px;
+  height: 70px;
+  object-fit: cover;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.cabin-thumb:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+}
+
+.cabin-thumb.active {
+  border-color: #667eea;
+  box-shadow: 0 0 0 2px #1a1a2e, 0 0 0 4px #667eea;
+}
+
+/* Header con título y ubicación */
+.cabin-header {
+  flex: 1;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  box-shadow: 0 8px 32px rgba(31, 38, 135, 0.2);
+  backdrop-filter: blur(10px);
+  width: auto;
+  height: 100%;
+  overflow-y: auto;
+  min-width: 250px;
+}
+
+.cabin-header-left h1 {
+  font-size: 16px;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0 0 2px 0;
+  line-height: 1.2;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.cabin-header-location {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 10px;
+  color: #e0e0e0;
+  margin-bottom: 3px;
+  font-weight: 600;
+}
+
+.cabin-header-stats {
+  display: flex;
+  gap: 6px;
+  font-size: 9px;
+  color: #b0b0b0;
+  margin-bottom: 4px;
+}
+
+.cabin-header-stats span {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 2px 4px;
+  border-radius: 4px;
+}
+
+.cabin-header-description {
+  font-size: 9px;
+  line-height: 1.3;
+  color: #e0e0e0;
+  margin-top: 4px;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 4px;
+  border-radius: 4px;
+  border-left: 2px solid #667eea;
+}
+
+/* Características en el header */
+.cabin-header-features {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.cabin-header-right {
+  display: flex;
+  gap: 10px;
+}
+
+.cabin-header-btn {
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 10px;
+  padding: 8px 16px;
+  cursor: pointer;
+  font-size: 13px;
+  color: #ffffff;
+  transition: all 0.3s ease;
+  font-weight: 600;
+}
+
+.cabin-header-btn:hover {
+  background: rgba(102, 126, 234, 0.8);
+  border-color: rgba(102, 126, 234, 1);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+}
+
+/* Contenido principal */
+.cabin-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-bottom: 0;
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+}
+
+.cabin-main-info {
+  background: rgba(255, 255, 255, 0.08);
+  padding: 20px;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(31, 38, 135, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+}
+
+.cabin-main-info h3 {
+  font-size: 18px;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 18px 0 10px 0;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #667eea;
+  display: inline-block;
+}
+
+.cabin-description {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #e0e0e0;
+  margin-bottom: 16px;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 12px;
+  border-radius: 10px;
+  border-left: 3px solid #667eea;
+}
+
+/* Características */
+.cabin-features {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+  margin: 16px 0;
+}
+
+.cabin-feature {
+  padding: 8px;
+  background: rgba(102, 126, 234, 0.15);
+  border-radius: 8px;
+  border: 1px solid rgba(102, 126, 234, 0.3);
+  transition: all 0.3s ease;
+  text-align: center;
+}
+
+.cabin-feature:hover {
+  border-color: #667eea;
+  background: rgba(102, 126, 234, 0.25);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.25);
+}
+
+.cabin-feature-icon {
+  font-size: 18px;
+  margin-bottom: 2px;
+}
+
+.cabin-feature-title {
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 1px;
+  font-size: 8px;
+}
+
+.cabin-feature-value {
+  font-size: 10px;
+  color: #667eea;
+  font-weight: 700;
+}
+
+/* Sidebar derecho */
+.cabin-sidebar {
+  position: relative;
+  top: 0;
+  height: fit-content;
+  max-width: 280px;
+  width: 100%;
+}
+
+.cabin-booking-card {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  padding: 8px;
+  box-shadow: 0 8px 32px rgba(31, 38, 135, 0.3);
+  background: rgba(255, 255, 255, 0.08);
+  margin-bottom: 0;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  max-width: 280px;
+}
+
+.cabin-booking-card:hover {
+  box-shadow: 0 12px 40px rgba(102, 126, 234, 0.4);
+  transform: translateY(-3px);
+  border-color: rgba(102, 126, 234, 0.5);
+}
+
+.cabin-price-container {
+  margin-bottom: 6px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.cabin-price {
+  font-size: 16px;
+  font-weight: 900;
+  color: #667eea;
+  text-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.cabin-price-period {
+  font-size: 8px;
+  color: #b0b0b0;
+  font-weight: 500;
+}
+
+.cabin-booking-btn {
+  width: 100%;
+  padding: 6px 10px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: 6px;
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+}
+
+.cabin-booking-btn:hover {
+  box-shadow: 0 12px 35px rgba(102, 126, 234, 0.5);
+  transform: translateY(-2px);
+}
+
+.cabin-booking-btn:active {
+  transform: translateY(0px);
+}
+
+.cabin-booking-note {
+  font-size: 7px;
+  color: #b0b0b0;
+  text-align: center;
+  margin-bottom: 4px;
+}
+
+.cabin-booking-details {
+  font-size: 7px;
+  color: #c0c0c0;
+  line-height: 1.3;
+}
+
+/* Lightbox */
+.lightbox-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.95);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  backdrop-filter: blur(5px);
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.lightbox-container {
+  position: relative;
+  max-width: 95vw;
+  max-height: 95vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lightbox-close {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: white;
+  border: none;
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  font-size: 28px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  transition: all 0.2s ease;
+}
+
+.lightbox-close:hover {
+  background: #f0f0f0;
+  transform: scale(1.1);
+}
+
+.lightbox-image {
+  max-width: 100%;
+  max-height: 50vh;
+  object-fit: contain;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+  animation: scaleIn 0.3s ease;
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.lightbox-nav {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.8);
+  border: none;
+  border-radius: 50%;
+  width: 56px;
+  height: 56px;
+  font-size: 24px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  z-index: 10000;
+}
+
+.lightbox-nav:hover {
+  background: rgba(255, 255, 255, 1);
+  transform: scale(1.1);
+}
+
+.lightbox-nav-prev {
+  left: 20px;
+}
+
+.lightbox-nav-next {
+  right: 20px;
+}
+
+.lightbox-counter {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
+  padding: 12px 20px;
+  border-radius: 24px;
+  font-size: 14px;
+  z-index: 10000;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .cabin-content {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .cabin-sidebar {
+    position: static;
+  }
+
+  .cabin-detail-container {
+    padding: 10px;
+  }
+
+  .cabin-top-section {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .cabin-gallery {
+    width: 100%;
+  }
+
+  .cabin-header {
+    width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .cabin-detail-container {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    padding: 10px;
+  }
+
+  .cabin-top-section {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .cabin-gallery {
+    width: 100%;
+  }
+
+  .cabin-header {
+    width: 100%;
+    padding: 10px;
+  }
+
+  .cabin-header-left h1 {
+    font-size: 18px;
+  }
+
+  .cabin-header-right {
+    width: 100%;
+  }
+
+  .cabin-header-btn {
+    flex: 1;
+    padding: 5px 10px;
+    font-size: 11px;
+  }
+
+  .cabin-header-features {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .cabin-gallery-thumbnails {
+    gap: 6px;
+    padding: 8px;
+  }
+
+  .cabin-thumb {
+    width: 60px;
+    height: 60px;
+  }
+
+  .lightbox-nav {
+    width: 44px;
+    height: 44px;
+    font-size: 18px;
+  }
+
+  .lightbox-nav-prev {
+    left: 8px;
+  }
+
+  .lightbox-nav-next {
+    right: 8px;
+  }
+
+  .cabin-price {
+    font-size: 28px;
+  }
+
+  .cabin-main-info,
+  .cabin-booking-card {
+    padding: 16px;
+  }
+
+  .cabin-header-location {
+    font-size: 13px;
+  }
+
+  .cabin-main-info h3 {
+    font-size: 18px;
+  }
+
+  .cabin-features {
+    margin: 16px 0;
+  }
+}

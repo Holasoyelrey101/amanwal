@@ -1,0 +1,147 @@
+.profile-container {
+  min-height: 80vh;
+  background: linear-gradient(135deg, #f5f7fa 0%, #f0f2f5 100%);
+  padding: 20px 0;
+}
+
+.profile-card {
+  border: none;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 20px;
+}
+
+.avatar-placeholder {
+  font-size: 64px;
+  line-height: 1;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+}
+
+.nav-tabs {
+  border-bottom: 2px solid #dee2e6;
+  gap: 10px;
+}
+
+.nav-link {
+  color: #666;
+  font-weight: 600;
+  border: none;
+  border-bottom: 3px solid transparent;
+  padding: 10px 20px;
+  transition: all 0.3s ease;
+}
+
+.nav-link:hover {
+  color: #007bff;
+  border-bottom-color: #007bff;
+}
+
+.nav-link.active {
+  color: #007bff;
+  background: transparent;
+  border-bottom-color: #007bff;
+}
+
+.card {
+  border: none;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+.card-header {
+  border-bottom: 1px solid #dee2e6;
+  border-radius: 10px 10px 0 0;
+}
+
+.booking-card {
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.booking-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.booking-dates {
+  background: #f8f9fa;
+  padding: 12px;
+  border-radius: 8px;
+  margin: 12px 0;
+}
+
+.date-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+  font-size: 14px;
+}
+
+.date-item .label {
+  font-weight: 600;
+  color: #666;
+}
+
+.booking-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 12px;
+  border-top: 1px solid #dee2e6;
+}
+
+.price {
+  font-size: 18px;
+  color: #28a745;
+}
+
+.form-control {
+  border-radius: 8px;
+  border: 1px solid #dee2e6;
+  padding: 10px 12px;
+  transition: all 0.3s ease;
+}
+
+.form-control:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.btn {
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.gap-2 {
+  gap: 10px;
+}
+
+@media (max-width: 768px) {
+  .profile-card {
+    position: static;
+  }
+
+  .nav-link {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+
+  .booking-card {
+    margin-bottom: 15px;
+  }
+}
