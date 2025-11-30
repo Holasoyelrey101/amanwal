@@ -4,7 +4,9 @@ import jwt from 'jsonwebtoken';
 // @ts-ignore
 import bcrypt from 'bcryptjs';
 import { isEmail } from 'validator';
+import crypto from 'crypto';
 import { AuthRequest } from '../middleware/auth.middleware';
+import { sendEmail } from '../utils/emailService';
 
 const prisma = new PrismaClient();
 
@@ -57,26 +59,62 @@ export const register = async (req: AuthRequest, res: Response): Promise<void> =
     // Encriptar contraseña
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    // Generar token de verificación
+    const verificationToken = crypto.randomBytes(32).toString('hex');
+    const verificationTokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 horas
+
     // Crear usuario
     const user = await prisma.user.create({
       data: {
         email,
         name,
         password: hashedPassword,
+        verificationToken,
+        verificationTokenExpiry,
       },
     });
 
-    const token = generateToken(user.id, user.role);
+    // Enviar email de verificación
+    const verificationUrl = `${process.env.FRONTEND_URL}/verify-email/${verificationToken}`;
+    
+    try {
+      const emailHtml = `
+        <h2>¡Bienvenido a Amanwal!</h2>
+        <p>Hola ${name},</p>
+        <p>Para completar tu registro, necesitas verificar tu email.</p>
+        <p>
+          <a href="${verificationUrl}" style="background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">
+            Verificar Email
+          </a>
+        </p>
+        <p>O copia este enlace en tu navegador:</p>
+        <p><code>${verificationUrl}</code></p>
+        <p>Este enlace expira en 24 horas.</p>
+        <p>Si no creaste esta cuenta, ignora este correo.</p>
+      `;
+
+      await sendEmail({
+        to: email,
+        subject: '✓ Verifica tu email en Amanwal',
+        html: emailHtml,
+      });
+
+      console.log(`📧 Email de verificación enviado a ${email}`);
+    } catch (emailError) {
+      console.error('Error al enviar email de verificación:', emailError);
+      // No fallar el registro si el email no se envía
+    }
 
     res.status(201).json({
-      message: 'Usuario registrado exitosamente',
+      message: 'Usuario registrado exitosamente. Por favor verifica tu email.',
       user: {
         id: user.id,
         email: user.email,
         name: user.name,
+        isEmailVerified: user.isEmailVerified,
         role: user.role,
       },
-      token,
+      requiresVerification: true,
     });
   } catch (error) {
     console.error(error);
@@ -101,6 +139,16 @@ export const login = async (req: AuthRequest, res: Response): Promise<void> => {
       return;
     }
 
+    // Verificar si el email está verificado
+    if (!user.isEmailVerified) {
+      res.status(403).json({ 
+        error: 'Por favor verifica tu email antes de iniciar sesión',
+        requiresVerification: true,
+        userId: user.id,
+      });
+      return;
+    }
+
     // Verificar contraseña
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
@@ -117,6 +165,7 @@ export const login = async (req: AuthRequest, res: Response): Promise<void> => {
         email: user.email,
         name: user.name,
         role: user.role,
+        isEmailVerified: user.isEmailVerified,
       },
       token,
     });
@@ -250,5 +299,130 @@ export const changePassword = async (req: AuthRequest, res: Response): Promise<v
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Error al cambiar contraseña' });
+  }
+};
+
+/**
+ * Verifica el email del usuario usando el token enviado por email
+ */
+export const verifyEmail = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { token } = req.params;
+
+    if (!token) {
+      res.status(400).json({ error: 'Token de verificación requerido' });
+      return;
+    }
+
+    // Buscar usuario con este token
+    const user = await prisma.user.findFirst({
+      where: {
+        verificationToken: token,
+        verificationTokenExpiry: {
+          gt: new Date(), // Token aún no expirado
+        },
+      },
+    });
+
+    if (!user) {
+      res.status(400).json({ error: 'Token inválido o expirado' });
+      return;
+    }
+
+    // Marcar como verificado
+    const updatedUser = await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        isEmailVerified: true,
+        verificationToken: null,
+        verificationTokenExpiry: null,
+      },
+    });
+
+    // Generar token JWT para login automático
+    const jwtToken = generateToken(updatedUser.id, updatedUser.role);
+
+    res.json({
+      message: '✓ Email verificado exitosamente',
+      user: {
+        id: updatedUser.id,
+        email: updatedUser.email,
+        name: updatedUser.name,
+        isEmailVerified: updatedUser.isEmailVerified,
+      },
+      token: jwtToken,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error al verificar email' });
+  }
+};
+
+/**
+ * Reenvía email de verificación si el usuario aún no lo verificó
+ */
+export const resendVerificationEmail = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      res.status(400).json({ error: 'Email requerido' });
+      return;
+    }
+
+    const user = await prisma.user.findUnique({ where: { email } });
+
+    if (!user) {
+      res.status(404).json({ error: 'Usuario no encontrado' });
+      return;
+    }
+
+    if (user.isEmailVerified) {
+      res.status(400).json({ error: 'Este email ya está verificado' });
+      return;
+    }
+
+    // Generar nuevo token
+    const verificationToken = crypto.randomBytes(32).toString('hex');
+    const verificationTokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        verificationToken,
+        verificationTokenExpiry,
+      },
+    });
+
+    // Enviar email
+    const verificationUrl = `${process.env.FRONTEND_URL}/verify-email/${verificationToken}`;
+    
+    try {
+      const emailHtml = `
+        <h2>Verifica tu email en Amanwal</h2>
+        <p>Hola ${user.name},</p>
+        <p>Este es el enlace de verificación para tu cuenta:</p>
+        <p>
+          <a href="${verificationUrl}" style="background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">
+            Verificar Email
+          </a>
+        </p>
+        <p>Este enlace expira en 24 horas.</p>
+      `;
+
+      await sendEmail({
+        to: email,
+        subject: '✓ Verifica tu email en Amanwal',
+        html: emailHtml,
+      });
+
+      res.json({ message: 'Email de verificación reenviado exitosamente' });
+    } catch (emailError) {
+      console.error('Error al enviar email:', emailError);
+      res.status(500).json({ error: 'Error al enviar email de verificación' });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error al reenviar email' });
   }
 };

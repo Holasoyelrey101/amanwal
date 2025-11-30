@@ -13,6 +13,8 @@ import { AdminDashboard } from './pages/AdminDashboard';
 import { Profile } from './pages/Profile';
 import { MyBookings } from './pages/MyBookings';
 import { PaymentResult } from './pages/PaymentResult';
+import { VerifyEmail } from './pages/VerifyEmail';
+import { ResendVerification } from './pages/ResendVerification';
 import PaymentFlow from './components/PaymentFlow';
 import apiClient from './api/client';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -41,6 +43,8 @@ function App() {
               <Route path="/" element={<Home />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
+              <Route path="/verify-email/:token" element={<VerifyEmail />} />
+              <Route path="/auth/resend" element={<ResendVerification />} />
               <Route path="/cabins" element={<CabinList />} />
               <Route path="/cabins/:id" element={<CabinDetail />} />
               <Route

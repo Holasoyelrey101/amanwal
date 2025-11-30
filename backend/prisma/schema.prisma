@@ -11,18 +11,21 @@ datasource db {
 }
 
 model User {
-  id        String     @id @default(cuid())
-  email     String     @unique
-  name      String
-  password  String
-  phone     String?
-  avatar    String?
-  role      String     @default("user")
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
-  cabins    Cabin[]
-  bookings  Booking[]
-  reviews   Review[]
+  id              String     @id @default(cuid())
+  email           String     @unique
+  name            String
+  password        String
+  phone           String?
+  avatar          String?
+  role            String     @default("user")
+  isEmailVerified Boolean    @default(false)
+  verificationToken String?
+  verificationTokenExpiry DateTime?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+  cabins          Cabin[]
+  bookings        Booking[]
+  reviews         Review[]
 }
 
 model Cabin {

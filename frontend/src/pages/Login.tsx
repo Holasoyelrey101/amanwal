@@ -10,6 +10,8 @@ export const Login: React.FC = () => {
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [requiresVerification, setRequiresVerification] = useState(false);
+  const [unverifiedEmail, setUnverifiedEmail] = useState('');
   const navigate = useNavigate();
   const { login } = useAuth();
 
@@ -22,17 +24,75 @@ export const Login: React.FC = () => {
     e.preventDefault();
     setError('');
     setLoading(true);
+    setRequiresVerification(false);
 
     try {
       const response = await authAPI.login(formData.email, formData.password);
       login(response.data.user, response.data.token);
       navigate('/');
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Error al iniciar sesión');
+      // Si el error es 403 y requiresVerification está en true, mostrar opción de reenviar
+      if (err.response?.status === 403 && err.response?.data?.requiresVerification) {
+        setRequiresVerification(true);
+        setUnverifiedEmail(formData.email);
+        setError('');
+      } else {
+        setError(err.response?.data?.error || 'Error al iniciar sesión');
+      }
     } finally {
       setLoading(false);
     }
   };
+
+  if (requiresVerification) {
+    return (
+      <div className="container py-5">
+        <div className="row justify-content-center">
+          <div className="col-md-6">
+            <div className="card shadow border-warning">
+              <div className="card-body p-5">
+                <div className="mb-4" style={{ fontSize: '50px', textAlign: 'center' }}>📧</div>
+                <h2 className="card-title text-center text-warning mb-3">Email No Verificado</h2>
+                <p className="text-muted mb-4">
+                  Antes de iniciar sesión, necesitas verificar tu correo electrónico.
+                </p>
+                
+                <div className="alert alert-info" role="alert">
+                  <strong>¿Qué hacer?</strong>
+                  <ul className="mb-0 mt-2">
+                    <li>Revisa tu correo electrónico: <strong>{unverifiedEmail}</strong></li>
+                    <li>Busca un email de Amanwal con un enlace de verificación</li>
+                    <li>Haz clic en el enlace para verificar tu cuenta</li>
+                  </ul>
+                </div>
+
+                <p className="text-muted mb-3">¿No recibes el email?</p>
+                
+                <button
+                  className="btn btn-primary w-100"
+                  onClick={() => navigate('/auth/resend')}
+                >
+                  Reenviar Email de Verificación
+                </button>
+
+                <hr className="my-4" />
+
+                <button
+                  className="btn btn-outline-secondary w-100"
+                  onClick={() => {
+                    setRequiresVerification(false);
+                    setFormData({ email: '', password: '' });
+                  }}
+                >
+                  Intentar Nuevamente con Otro Email
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container py-5">
