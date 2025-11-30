@@ -113,9 +113,14 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ cabinId, price
       });
 
       if (response.ok) {
-        alert('¡Reserva realizada exitosamente!');
+        const bookingData = await response.json();
+        const bookingId = bookingData.id;
+        
+        console.log('✅ Reserva creada exitosamente:', bookingId);
+        
+        // Redirigir al componente de pago con Flow
         onClose();
-        window.location.reload();
+        navigate(`/payment/${bookingId}`);
       } else {
         const error = await response.json();
         alert('Error: ' + error.error);

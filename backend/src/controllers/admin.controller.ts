@@ -8,7 +8,9 @@ export const getDashboardStats = async (req: AuthRequest, res: Response): Promis
   try {
     const totalUsers = await prisma.user.count();
     const totalCabins = await prisma.cabin.count();
-    const totalBookings = await prisma.booking.count();
+    const totalBookings = await prisma.booking.count({
+      where: { status: 'confirmed' }
+    });
     const totalReviews = await prisma.review.count();
 
     const recentUsers = await prisma.user.findMany({

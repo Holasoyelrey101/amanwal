@@ -1,6 +1,7 @@
 import { Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { AuthRequest } from '../middleware/auth.middleware';
+import { sendEmail, getCancellationEmailTemplate, getConfirmationEmailTemplate } from '../utils/emailService';
 
 const prisma = new PrismaClient();
 
@@ -71,9 +72,17 @@ export const createBooking = async (req: AuthRequest, res: Response): Promise<vo
         checkIn: checkInDate,
         checkOut: checkOutDate,
         totalPrice,
-        status: 'confirmed'
+        status: 'pending',
+        paymentStatus: 'pending'
       },
+      include: {
+        cabin: true,
+        user: true
+      }
     });
+
+    // NO enviar email aquí - esperar a confirmación de pago
+    // El email se enviará cuando el webhook de Flow confirme el pago
 
     res.status(201).json(booking);
   } catch (error) {
@@ -126,9 +135,23 @@ export const cancelBooking = async (req: AuthRequest, res: Response): Promise<vo
   try {
     const { id } = req.params;
     const userId = req.user?.id;
+    const userRole = req.user?.role;
 
-    const booking = await prisma.booking.findUnique({ where: { id } });
-    if (!booking || booking.userId !== userId) {
+    const booking = await prisma.booking.findUnique({
+      where: { id },
+      include: {
+        cabin: true,
+        user: true
+      }
+    });
+
+    if (!booking) {
+      res.status(404).json({ error: 'Reserva no encontrada' });
+      return;
+    }
+
+    // Permitir cancelación si es el propietario o si es admin
+    if (booking.userId !== userId && userRole !== 'admin') {
       res.status(403).json({ error: 'No tienes permisos para cancelar esta reserva' });
       return;
     }
@@ -136,11 +159,122 @@ export const cancelBooking = async (req: AuthRequest, res: Response): Promise<vo
     const updatedBooking = await prisma.booking.update({
       where: { id },
       data: { status: 'cancelled' },
+      include: {
+        cabin: true,
+        user: true
+      }
     });
+
+    // Enviar email de cancelación
+    try {
+      const emailTemplate = getCancellationEmailTemplate(
+        updatedBooking.user.name,
+        updatedBooking.cabin.title,
+        updatedBooking.checkIn.toISOString(),
+        updatedBooking.checkOut.toISOString(),
+        updatedBooking.totalPrice,
+        updatedBooking.bookingNumber
+      );
+
+      await sendEmail({
+        to: updatedBooking.user.email,
+        subject: `❌ Reserva Cancelada - ${updatedBooking.bookingNumber}`,
+        html: emailTemplate
+      });
+    } catch (emailError) {
+      console.error('Error al enviar email de cancelación:', emailError);
+      // No fallar la cancelación si el email falla
+    }
 
     res.json(updatedBooking);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Error al cancelar reserva' });
+  }
+};
+
+export const deleteBooking = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const userId = req.user?.id;
+
+    const booking = await prisma.booking.findUnique({
+      where: { id }
+    });
+
+    if (!booking) {
+      res.status(404).json({ error: 'Reserva no encontrada' });
+      return;
+    }
+
+    // Solo el admin o el dueño de la reserva pueden eliminarla
+    if (booking.userId !== userId && req.user?.role !== 'admin') {
+      res.status(403).json({ error: 'No tienes permisos para eliminar esta reserva' });
+      return;
+    }
+
+    // Solo se pueden eliminar reservas canceladas
+    if (booking.status !== 'cancelled') {
+      res.status(400).json({ error: 'Solo se pueden eliminar reservas canceladas' });
+      return;
+    }
+
+    await prisma.booking.delete({
+      where: { id }
+    });
+
+    res.json({ message: 'Reserva eliminada exitosamente' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error al eliminar reserva' });
+  }
+};
+
+/**
+ * Permite al usuario confirmar su propia reserva después de pagar
+ * Usado después de que Flow redirige de vuelta
+ */
+export const confirmUserBooking = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const userId = req.user?.id;
+
+    const booking = await prisma.booking.findUnique({
+      where: { id }
+    });
+
+    if (!booking) {
+      res.status(404).json({ error: 'Reserva no encontrada' });
+      return;
+    }
+
+    // Solo el propietario puede confirmar su propia reserva
+    if (booking.userId !== userId) {
+      res.status(403).json({ error: 'No tienes permisos para confirmar esta reserva' });
+      return;
+    }
+
+    // Solo confirmar si está en pending
+    if (booking.status !== 'pending') {
+      res.status(400).json({ error: 'Esta reserva ya no puede ser confirmada' });
+      return;
+    }
+
+    const updatedBooking = await prisma.booking.update({
+      where: { id },
+      data: {
+        status: 'confirmed',
+        paymentStatus: 'completed',
+        paymentDate: new Date(),
+      }
+    });
+
+    // NO enviar email aquí - el webhook de Flow ya lo envía
+    // Solo actualizar el estado de la reserva
+
+    res.json(updatedBooking);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error al confirmar reserva' });
   }
 };

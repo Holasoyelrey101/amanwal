@@ -66,3 +66,22 @@
   margin: 0.5rem 0;
   opacity: 0.2;
 }
+
+.theme-toggle-btn {
+  font-size: 1.5rem;
+  padding: 0.3rem 0.8rem !important;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.theme-toggle-btn:hover {
+  transform: scale(1.2) rotate(-10deg);
+  text-shadow: 0 0 8px rgba(212, 165, 116, 0.5);
+}
+
+.theme-toggle-btn:active {
+  transform: scale(0.95) rotate(-10deg);
+}

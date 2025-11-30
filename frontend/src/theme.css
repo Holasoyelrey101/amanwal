@@ -1,0 +1,274 @@
+/* Tema Oscuro (único) */
+:root {
+  --bg-primary: #000000;
+  --bg-secondary: #1a1a1a;
+  --bg-tertiary: #2a2a2a;
+  --text-primary: #ffffff;
+  --text-secondary: #e0e0e0;
+  --text-muted: #a0a0a0;
+  --border-color: #333333;
+  --card-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  --card-shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.6);
+}
+
+/* Aplicar tema a toda la página */
+body,
+html {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Navbar */
+.navbar {
+  background-color: var(--bg-secondary) !important;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.navbar .nav-link {
+  color: var(--text-secondary) !important;
+  transition: color 0.2s ease;
+}
+
+.navbar .nav-link:hover {
+  color: #d4a574 !important;
+}
+
+.navbar .nav-link.active {
+  color: #d4a574 !important;
+}
+
+/* Cards */
+.card,
+.booking-card {
+  background-color: var(--bg-secondary) !important;
+  border-color: var(--border-color) !important;
+  color: var(--text-primary) !important;
+  box-shadow: var(--card-shadow);
+  transition: all 0.3s ease;
+}
+
+.card:hover,
+.booking-card:hover {
+  box-shadow: var(--card-shadow-hover);
+}
+
+/* Tablas */
+.table {
+  background-color: var(--bg-secondary) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-color) !important;
+}
+
+.table thead {
+  background-color: var(--bg-tertiary) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-color) !important;
+}
+
+.table tbody tr {
+  border-color: var(--border-color) !important;
+}
+
+.table tbody tr:hover {
+  background-color: var(--bg-tertiary) !important;
+}
+
+.table td,
+.table th {
+  border-color: var(--border-color) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Inputs y Formularios */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="tel"],
+input[type="date"],
+.form-control,
+.form-select,
+textarea {
+  background-color: #000 !important;
+  border: 1px solid #333 !important;
+  color: #fff !important;
+  padding: 10px 12px !important;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="number"]:focus,
+input[type="tel"]:focus,
+input[type="date"]:focus,
+.form-control:focus,
+.form-select:focus,
+textarea:focus {
+  background-color: #fff !important;
+  border-color: #3b82f6 !important;
+  color: #000 !important;
+  box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25) !important;
+}
+
+input::placeholder,
+.form-control::placeholder,
+textarea::placeholder {
+  color: #a0a0a0 !important;
+}
+
+input:focus::placeholder,
+.form-control:focus::placeholder,
+textarea:focus::placeholder {
+  color: #666 !important;
+}
+
+.form-label {
+  color: var(--text-secondary) !important;
+}
+
+/* Botones */
+.btn-outline-primary {
+  color: #d4a574 !important;
+  border-color: #d4a574 !important;
+}
+
+.btn-outline-primary:hover {
+  background-color: #d4a574 !important;
+  border-color: #d4a574 !important;
+}
+
+.btn-outline-danger {
+  color: #d4a574 !important;
+  border-color: #d4a574 !important;
+}
+
+.btn-outline-danger:hover {
+  background-color: #d4a574 !important;
+  border-color: #d4a574 !important;
+}
+
+/* Modal */
+.modal-content {
+  background-color: var(--bg-secondary) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-color) !important;
+}
+
+.modal-header {
+  background-color: var(--bg-tertiary) !important;
+  border-color: var(--border-color) !important;
+}
+
+.modal-footer {
+  background-color: var(--bg-tertiary) !important;
+  border-color: var(--border-color) !important;
+}
+
+.btn-close {
+  filter: invert(1) grayscale(100%) brightness(200%);
+}
+
+:root[data-theme='dark'] .btn-close {
+  filter: invert(1);
+}
+
+/* Texto */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--text-primary) !important;
+}
+
+.text-muted {
+  color: var(--text-muted) !important;
+}
+
+.text-secondary {
+  color: var(--text-secondary) !important;
+}
+
+/* Alerts */
+.alert {
+  background-color: var(--bg-tertiary) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-color) !important;
+}
+
+.alert-info {
+  background-color: rgba(212, 165, 116, 0.1) !important;
+  border-color: #d4a574 !important;
+  color: #d4a574 !important;
+}
+
+.alert-danger {
+  background-color: rgba(220, 53, 69, 0.1) !important;
+  border-color: #dc3545 !important;
+  color: #dc3545 !important;
+}
+
+.alert-success {
+  background-color: rgba(40, 167, 69, 0.1) !important;
+  border-color: #28a745 !important;
+  color: #28a745 !important;
+}
+
+.alert-warning {
+  background-color: rgba(255, 193, 7, 0.1) !important;
+  border-color: #ffc107 !important;
+  color: #ffc107 !important;
+}
+
+/* Badge */
+.badge {
+  background-color: #d4a574 !important;
+  color: var(--bg-primary) !important;
+}
+
+/* Footer */
+.footer {
+  background-color: var(--bg-secondary) !important;
+  color: var(--text-secondary) !important;
+  border-top: 1px solid var(--border-color);
+}
+
+/* Booking Calendar */
+.booking-calendar-modal {
+  background-color: var(--bg-secondary) !important;
+  color: var(--text-primary) !important;
+}
+
+.calendar-day {
+  background-color: var(--bg-tertiary) !important;
+  border-color: var(--border-color) !important;
+  color: var(--text-primary) !important;
+}
+
+.calendar-day.occupied {
+  background-color: rgba(220, 53, 69, 0.2) !important;
+  border-color: #dc3545 !important;
+  color: var(--text-muted) !important;
+}
+
+.booking-summary {
+  background-color: var(--bg-tertiary) !important;
+  color: var(--text-primary) !important;
+}
+
+/* CabinList */
+.cabin-card {
+  background-color: var(--bg-secondary) !important;
+  border-color: var(--border-color) !important;
+}
+
+/* Admin Dashboard */
+.admin-dashboard {
+  background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+}
+
+.table-dark {
+  background-color: var(--bg-tertiary) !important;
+}
+
+/* Spinner */
+.spinner-border {
+  color: #d4a574 !important;
+}

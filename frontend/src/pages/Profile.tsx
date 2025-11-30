@@ -229,7 +229,7 @@ export const Profile: React.FC = () => {
 
                             <div className="booking-footer mt-3">
                               <div>
-                                <strong className="price">${booking.totalPrice}</strong>
+                                <strong className="price">${booking.totalPrice.toLocaleString('es-ES')}</strong>
                               </div>
                               <span className={`badge bg-${booking.status === 'confirmed' ? 'success' : booking.status === 'pending' ? 'warning' : 'danger'}`}>
                                 {booking.status === 'confirmed' ? '✓ Confirmada' : booking.status === 'pending' ? '⏳ Pendiente' : '✗ Cancelada'}

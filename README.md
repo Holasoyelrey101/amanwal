@@ -260,20 +260,25 @@ npm run test:coverage
 - [x] Listado de cabañas
 - [x] Detalles de cabaña
 - [x] Sistema de reseñas
-- [x] Reservas
+- [x] Reservas con calendario
 - [x] API REST completa
 - [x] Validación de datos
 - [x] JWT Security
+- [x] Panel de administrador
+- [x] Integración Flow (pago)
+- [x] Notificaciones por email
+- [x] Dashboard para usuarios (mis reservas)
+- [x] Búsqueda y filtrado de reservas
+- [x] Paginación en admin
+- [x] Confirmación automática de reservas pagadas
+- [x] Cancellación y eliminación de reservas
 
 ### Por Implementar 🔲
 - [ ] Integración Google Maps
-- [ ] Página de perfil completa
-- [ ] Panel de mis reservas
-- [ ] Crear/editar cabañas
-- [ ] Pago con Stripe
-- [ ] Notificaciones por email
-- [ ] Dashboard para dueños
-- [ ] Búsqueda avanzada
+- [ ] Página de perfil de usuario
+- [ ] Crear/editar cabañas por usuarios
+- [ ] Sistema de reembolsos
+- [ ] Búsqueda avanzada con filtros
 
 ## 📱 Responsive Design
 

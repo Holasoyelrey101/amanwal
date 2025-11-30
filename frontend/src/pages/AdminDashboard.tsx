@@ -79,6 +79,21 @@ export const AdminDashboard: React.FC = () => {
     totalPrice: 0,
     status: 'confirmed'
   });
+  // Nuevos estados para búsqueda y paginación
+  const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [bookingsPerPage] = useState(10);
+  const [confirmModal, setConfirmModal] = useState<{
+    show: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+  }>({
+    show: false,
+    title: '',
+    message: '',
+    onConfirm: () => {}
+  });
 
   const headers = { Authorization: `Bearer ${token}` };
 
@@ -130,7 +145,12 @@ export const AdminDashboard: React.FC = () => {
     try {
       setLoading(true);
       const response = await axios.get(`${API_URL}/admin/bookings`, { headers });
-      setBookings(response.data);
+      // Ordenar de más nueva a más antigua
+      const sortedBookings = response.data.sort((a: Booking, b: Booking) => {
+        return new Date(b.checkIn).getTime() - new Date(a.checkIn).getTime();
+      });
+      setBookings(sortedBookings);
+      setCurrentPage(1); // Reset a la primera página
     } catch (error) {
       console.error('Error al cargar reservas:', error);
       alert('Error al cargar reservas');
@@ -138,6 +158,35 @@ export const AdminDashboard: React.FC = () => {
       setLoading(false);
     }
   };
+
+  // Función para filtrar reservas
+  const getFilteredBookings = () => {
+    if (!searchQuery.trim()) {
+      return bookings;
+    }
+
+    const query = searchQuery.toLowerCase();
+    return bookings.filter((booking) => {
+      const bookingNumber = booking.bookingNumber.toLowerCase();
+      const userName = booking.user.name.toLowerCase();
+      const cabinTitle = booking.cabin.title.toLowerCase();
+      const checkIn = new Date(booking.checkIn).toLocaleDateString('es-ES');
+
+      return (
+        bookingNumber.includes(query) ||
+        userName.includes(query) ||
+        cabinTitle.includes(query) ||
+        checkIn.includes(query)
+      );
+    });
+  };
+
+  // Calcular paginación
+  const filteredBookings = getFilteredBookings();
+  const totalPages = Math.ceil(filteredBookings.length / bookingsPerPage);
+  const startIndex = (currentPage - 1) * bookingsPerPage;
+  const endIndex = startIndex + bookingsPerPage;
+  const currentBookings = filteredBookings.slice(startIndex, endIndex);
 
   const handleTabChange = (tab: 'dashboard' | 'users' | 'cabins' | 'bookings') => {
     setActiveTab(tab);
@@ -163,49 +212,105 @@ export const AdminDashboard: React.FC = () => {
   };
 
   const deleteUser = async (userId: string) => {
-    if (!window.confirm('¿Estás seguro de que deseas eliminar este usuario?')) return;
-    try {
-      await axios.delete(`${API_URL}/admin/users/${userId}`, { headers });
-      alert('Usuario eliminado');
-      loadUsers();
-    } catch (error) {
-      console.error('Error al eliminar usuario:', error);
-      alert('Error al eliminar usuario');
-    }
+    setConfirmModal({
+      show: true,
+      title: '⚠️ Eliminar Usuario',
+      message: '¿Estás seguro de que deseas eliminar este usuario? Esta acción no se puede deshacer.',
+      onConfirm: async () => {
+        try {
+          await axios.delete(`${API_URL}/admin/users/${userId}`, { headers });
+          alert('Usuario eliminado');
+          loadUsers();
+          setConfirmModal({ ...confirmModal, show: false });
+        } catch (error) {
+          console.error('Error al eliminar usuario:', error);
+          alert('Error al eliminar usuario');
+        }
+      }
+    });
   };
 
   const deleteCabin = async (cabinId: string) => {
-    if (!window.confirm('¿Estás seguro de que deseas eliminar esta cabaña?')) return;
-    try {
-      await axios.delete(`${API_URL}/admin/cabins/${cabinId}`, { headers });
-      alert('Cabaña eliminada');
-      loadCabins();
-    } catch (error) {
-      console.error('Error al eliminar cabaña:', error);
-      alert('Error al eliminar cabaña');
-    }
+    setConfirmModal({
+      show: true,
+      title: '🗑️ Eliminar Cabaña',
+      message: '¿Estás seguro de que deseas eliminar esta cabaña? Esta acción no se puede deshacer.',
+      onConfirm: async () => {
+        try {
+          await axios.delete(`${API_URL}/admin/cabins/${cabinId}`, { headers });
+          alert('Cabaña eliminada');
+          loadCabins();
+          setConfirmModal({ ...confirmModal, show: false });
+        } catch (error) {
+          console.error('Error al eliminar cabaña:', error);
+          alert('Error al eliminar cabaña');
+          setConfirmModal({ ...confirmModal, show: false });
+        }
+      }
+    });
   };
 
   const cancelBooking = async (bookingId: string) => {
-    if (!window.confirm('¿Estás seguro de que deseas cancelar esta reserva?')) return;
-    try {
-      await axios.patch(`${API_URL}/bookings/${bookingId}/cancel`, {}, { headers });
-      alert('Reserva cancelada');
-      loadBookings();
-    } catch (error) {
-      console.error('Error al cancelar reserva:', error);
-      alert('Error al cancelar reserva');
-    }
+    setConfirmModal({
+      show: true,
+      title: '❌ Cancelar Reserva',
+      message: '¿Estás seguro de que deseas cancelar esta reserva? Esta acción no se puede deshacer.',
+      onConfirm: async () => {
+        try {
+          setLoading(true);
+          await axios.patch(`${API_URL}/bookings/${bookingId}/cancel`, {}, { headers });
+          setTimeout(() => {
+            loadBookings();
+          }, 500);
+          alert('Reserva cancelada');
+          setConfirmModal({ ...confirmModal, show: false });
+        } catch (error) {
+          console.error('Error al cancelar reserva:', error);
+          alert('Error al cancelar reserva');
+          setConfirmModal({ ...confirmModal, show: false });
+          setLoading(false);
+        }
+      }
+    });
+  };
+
+  const deleteBooking = async (bookingId: string) => {
+    setConfirmModal({
+      show: true,
+      title: '🗑️ Eliminar Reserva',
+      message: '¿Estás seguro de que deseas eliminar esta reserva cancelada? Esta acción no se puede deshacer.',
+      onConfirm: async () => {
+        try {
+          setLoading(true);
+          await axios.delete(`${API_URL}/bookings/${bookingId}`, { headers });
+          setTimeout(() => {
+            loadBookings();
+          }, 500);
+          alert('Reserva eliminada');
+          setConfirmModal({ ...confirmModal, show: false });
+        } catch (error) {
+          console.error('Error al eliminar reserva:', error);
+          alert('Error al eliminar reserva');
+          setConfirmModal({ ...confirmModal, show: false });
+          setLoading(false);
+        }
+      }
+    });
   };
 
   const confirmBooking = async (bookingId: string) => {
     try {
+      setLoading(true);
       await axios.patch(`${API_URL}/admin/bookings/${bookingId}/confirm`, {}, { headers });
+      // Pequeño delay para asegurar que la BD se actualiza
+      setTimeout(() => {
+        loadBookings();
+      }, 500);
       alert('Reserva confirmada');
-      loadBookings();
     } catch (error) {
       console.error('Error al confirmar reserva:', error);
       alert('Error al confirmar reserva');
+      setLoading(false);
     }
   };
 
@@ -259,7 +364,7 @@ export const AdminDashboard: React.FC = () => {
               className={`nav-link ${activeTab === 'dashboard' ? 'active' : ''}`}
               onClick={() => handleTabChange('dashboard')}
             >
-              Dashboard
+              📈 Dashboard
             </button>
           </li>
           <li className="nav-item" role="presentation">
@@ -267,7 +372,7 @@ export const AdminDashboard: React.FC = () => {
               className={`nav-link ${activeTab === 'users' ? 'active' : ''}`}
               onClick={() => handleTabChange('users')}
             >
-              Usuarios
+              👥 Usuarios
             </button>
           </li>
           <li className="nav-item" role="presentation">
@@ -275,7 +380,7 @@ export const AdminDashboard: React.FC = () => {
               className={`nav-link ${activeTab === 'cabins' ? 'active' : ''}`}
               onClick={() => handleTabChange('cabins')}
             >
-              Cabañas
+              🏠 Cabañas
             </button>
           </li>
           <li className="nav-item" role="presentation">
@@ -283,7 +388,7 @@ export const AdminDashboard: React.FC = () => {
               className={`nav-link ${activeTab === 'bookings' ? 'active' : ''}`}
               onClick={() => handleTabChange('bookings')}
             >
-              Reservas
+              📅 Reservas
             </button>
           </li>
         </ul>
@@ -296,34 +401,26 @@ export const AdminDashboard: React.FC = () => {
             ) : stats ? (
               <div className="row">
                 <div className="col-md-3 mb-3">
-                  <div className="card bg-primary text-white">
+                  <div className="card" style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white', border: 'none' }}>
                     <div className="card-body">
-                      <h5 className="card-title">Usuarios</h5>
+                      <h5 className="card-title">👥 Usuarios Registrados</h5>
                       <p className="card-text display-4">{stats.totalUsers}</p>
                     </div>
                   </div>
                 </div>
                 <div className="col-md-3 mb-3">
-                  <div className="card bg-success text-white">
+                  <div className="card" style={{ background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)', color: 'white', border: 'none' }}>
                     <div className="card-body">
-                      <h5 className="card-title">Cabañas</h5>
+                      <h5 className="card-title">🏠 Cabañas Publicadas</h5>
                       <p className="card-text display-4">{stats.totalCabins}</p>
                     </div>
                   </div>
                 </div>
                 <div className="col-md-3 mb-3">
-                  <div className="card bg-info text-white">
+                  <div className="card" style={{ background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)', color: 'white', border: 'none' }}>
                     <div className="card-body">
-                      <h5 className="card-title">Reservas</h5>
+                      <h5 className="card-title">📅 Reservas Activas</h5>
                       <p className="card-text display-4">{stats.totalBookings}</p>
-                    </div>
-                  </div>
-                </div>
-                <div className="col-md-3 mb-3">
-                  <div className="card bg-warning text-white">
-                    <div className="card-body">
-                      <h5 className="card-title">Comentarios</h5>
-                      <p className="card-text display-4">{stats.totalReviews}</p>
                     </div>
                   </div>
                 </div>
@@ -416,7 +513,6 @@ export const AdminDashboard: React.FC = () => {
                       <th>Precio</th>
                       <th>Dueño</th>
                       <th>Reservas</th>
-                      <th>Comentarios</th>
                       <th>Acciones</th>
                     </tr>
                   </thead>
@@ -430,7 +526,6 @@ export const AdminDashboard: React.FC = () => {
                           {cabin.owner.name} ({cabin.owner.email})
                         </td>
                         <td>{cabin._count.bookings}</td>
-                        <td>{cabin._count.reviews}</td>
                         <td>
                           <button
                             className="btn btn-sm btn-warning me-2"
@@ -459,71 +554,192 @@ export const AdminDashboard: React.FC = () => {
         {/* Bookings Tab */}
         {activeTab === 'bookings' && (
           <div className="tab-content">
+            {/* Barra de búsqueda y filtros */}
+            <div className="mb-4">
+              <div className="row">
+                <div className="col-md-12">
+                  <input
+                    type="text"
+                    className="form-control"
+                    placeholder="🔍 Buscar por número de reserva, nombre, cabaña o fecha..."
+                    value={searchQuery}
+                    onChange={(e) => {
+                      setSearchQuery(e.target.value);
+                      setCurrentPage(1); // Reset a primera página cuando se busca
+                    }}
+                  />
+                  {searchQuery && (
+                    <small className="text-muted">
+                      Se encontraron {filteredBookings.length} resultado(s)
+                    </small>
+                  )}
+                </div>
+              </div>
+            </div>
+
             {loading ? (
               <div className="text-center">Cargando...</div>
-            ) : bookings.length > 0 ? (
-              <div className="table-responsive">
-                <table className="table table-striped table-hover">
-                  <thead className="table-dark">
-                    <tr>
-                      <th>Nº Reserva</th>
-                      <th>Cabaña</th>
-                      <th>Huésped</th>
-                      <th>Email</th>
-                      <th>Entrada</th>
-                      <th>Salida</th>
-                      <th>Total</th>
-                      <th>Estado</th>
-                      <th>Acciones</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {bookings.map((booking) => (
-                      <tr key={booking.id}>
-                        <td><strong>{booking.bookingNumber}</strong></td>
-                        <td>{booking.cabin.title}</td>
-                        <td>{booking.user.name}</td>
-                        <td>{booking.user.email}</td>
-                        <td>{new Date(booking.checkIn).toLocaleDateString()}</td>
-                        <td>{new Date(booking.checkOut).toLocaleDateString()}</td>
-                        <td>${booking.totalPrice.toLocaleString()}</td>
-                        <td>
-                          <span className={`badge bg-${
-                            booking.status === 'confirmed' ? 'success' : 
-                            booking.status === 'pending' ? 'warning' : 'danger'
-                          }`}>
-                            {booking.status}
-                          </span>
-                        </td>
-                        <td>
-                          <button
-                            className="btn btn-sm btn-warning me-2"
-                            onClick={() => handleEditBooking(booking)}
-                          >
-                            Editar
-                          </button>
-                          {booking.status === 'pending' && (
-                            <button
-                              className="btn btn-sm btn-success me-2"
-                              onClick={() => confirmBooking(booking.id)}
-                            >
-                              Confirmar
-                            </button>
-                          )}
-                          <button
-                            className="btn btn-sm btn-danger"
-                            onClick={() => cancelBooking(booking.id)}
-                          >
-                            Cancelar
-                          </button>
-                        </td>
+            ) : filteredBookings.length > 0 ? (
+              <>
+                <div className="table-responsive">
+                  <table className="table table-striped table-hover">
+                    <thead className="table-dark">
+                      <tr>
+                        <th>Nº Reserva</th>
+                        <th>Cabaña</th>
+                        <th>Huésped</th>
+                        <th>Email</th>
+                        <th>Entrada</th>
+                        <th>Salida</th>
+                        <th>Total</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody>
+                      {currentBookings.map((booking) => (
+                        <tr key={booking.id}>
+                          <td><strong>{booking.bookingNumber}</strong></td>
+                          <td>{booking.cabin.title}</td>
+                          <td>{booking.user.name}</td>
+                          <td>{booking.user.email}</td>
+                          <td>{new Date(booking.checkIn).toLocaleDateString()}</td>
+                          <td>{new Date(booking.checkOut).toLocaleDateString()}</td>
+                          <td>${booking.totalPrice.toLocaleString('es-ES')}</td>
+                          <td>
+                            <span className={`badge bg-${
+                              booking.status === 'confirmed' ? 'success' : 
+                              booking.status === 'pending' ? 'warning' : 'danger'
+                            }`}>
+                              {booking.status}
+                            </span>
+                          </td>
+                          <td>
+                            <button
+                              className="btn btn-sm btn-warning me-2"
+                              onClick={() => handleEditBooking(booking)}
+                            >
+                              Editar
+                            </button>
+                            {booking.status === 'pending' && (
+                              <button
+                                className="btn btn-sm btn-success me-2"
+                                onClick={() => confirmBooking(booking.id)}
+                              >
+                                Confirmar
+                              </button>
+                            )}
+                            {booking.status !== 'cancelled' && (
+                              <button
+                                className="btn btn-sm btn-danger me-2"
+                                onClick={() => cancelBooking(booking.id)}
+                              >
+                                Cancelar
+                              </button>
+                            )}
+                            {booking.status === 'cancelled' && (
+                              <button
+                                className="btn btn-sm btn-danger"
+                                onClick={() => deleteBooking(booking.id)}
+                              >
+                                🗑️ Eliminar
+                              </button>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Paginación */}
+                {totalPages > 1 && (
+                  <div className="d-flex justify-content-between align-items-center mt-4">
+                    <div>
+                      <small className="text-muted">
+                        Mostrando {startIndex + 1} - {Math.min(endIndex, filteredBookings.length)} de {filteredBookings.length} reservas
+                      </small>
+                    </div>
+                    <nav aria-label="Page navigation">
+                      <ul className="pagination mb-0">
+                        <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
+                          <button
+                            className="page-link"
+                            onClick={() => setCurrentPage(1)}
+                            disabled={currentPage === 1}
+                          >
+                            Primera
+                          </button>
+                        </li>
+                        <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
+                          <button
+                            className="page-link"
+                            onClick={() => setCurrentPage(currentPage - 1)}
+                            disabled={currentPage === 1}
+                          >
+                            Anterior
+                          </button>
+                        </li>
+
+                        {/* Números de página */}
+                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+                          // Mostrar solo páginas cercanas a la actual
+                          if (
+                            page === 1 ||
+                            page === totalPages ||
+                            (page >= currentPage - 1 && page <= currentPage + 1)
+                          ) {
+                            return (
+                              <li
+                                key={page}
+                                className={`page-item ${currentPage === page ? 'active' : ''}`}
+                              >
+                                <button
+                                  className="page-link"
+                                  onClick={() => setCurrentPage(page)}
+                                >
+                                  {page}
+                                </button>
+                              </li>
+                            );
+                          } else if (
+                            (page === 2 && currentPage > 3) ||
+                            (page === totalPages - 1 && currentPage < totalPages - 2)
+                          ) {
+                            return (
+                              <li key={page} className="page-item disabled">
+                                <span className="page-link">...</span>
+                              </li>
+                            );
+                          }
+                          return null;
+                        })}
+
+                        <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
+                          <button
+                            className="page-link"
+                            onClick={() => setCurrentPage(currentPage + 1)}
+                            disabled={currentPage === totalPages}
+                          >
+                            Siguiente
+                          </button>
+                        </li>
+                        <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
+                          <button
+                            className="page-link"
+                            onClick={() => setCurrentPage(totalPages)}
+                            disabled={currentPage === totalPages}
+                          >
+                            Última
+                          </button>
+                        </li>
+                      </ul>
+                    </nav>
+                  </div>
+                )}
+              </>
             ) : (
-              <div className="alert alert-info">No hay reservas</div>
+              <div className="alert alert-info">No hay reservas {searchQuery && `que coincidan con "${searchQuery}"`}</div>
             )}
           </div>
         )}
@@ -655,6 +871,43 @@ export const AdminDashboard: React.FC = () => {
                     onClick={saveBookingChanges}
                   >
                     Guardar Cambios
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Confirmation Modal */}
+        {confirmModal.show && (
+          <div className="modal d-block" tabIndex={-1} style={{ backgroundColor: 'rgba(0,0,0,0.7)' }}>
+            <div className="modal-dialog modal-dialog-centered">
+              <div className="modal-content">
+                <div className="modal-header">
+                  <h5 className="modal-title">{confirmModal.title}</h5>
+                  <button
+                    type="button"
+                    className="btn-close"
+                    onClick={() => setConfirmModal({ ...confirmModal, show: false })}
+                  ></button>
+                </div>
+                <div className="modal-body">
+                  <p>{confirmModal.message}</p>
+                </div>
+                <div className="modal-footer">
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={() => setConfirmModal({ ...confirmModal, show: false })}
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-danger"
+                    onClick={confirmModal.onConfirm}
+                  >
+                    Eliminar
                   </button>
                 </div>
               </div>

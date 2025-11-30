@@ -47,18 +47,22 @@ model Cabin {
 }
 
 model Booking {
-  id        String   @id @default(cuid())
-  bookingNumber String @unique
-  cabin     Cabin    @relation(fields: [cabinId], references: [id], onDelete: Cascade)
-  cabinId   String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    String
-  checkIn   DateTime
-  checkOut  DateTime
-  totalPrice Float
-  status    String   @default("pending")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id            String   @id @default(cuid())
+  bookingNumber String   @unique
+  cabin         Cabin    @relation(fields: [cabinId], references: [id], onDelete: Cascade)
+  cabinId       String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId        String
+  checkIn       DateTime
+  checkOut      DateTime
+  totalPrice    Float
+  status        String   @default("pending")
+  paymentToken  String?
+  flowOrder     Int?
+  paymentStatus String   @default("pending")
+  paymentDate   DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }
 
 model Review {
