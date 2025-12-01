@@ -191,6 +191,11 @@ router.post('/confirm', async (req: Request, res: Response) => {
       // Enviar email de confirmación de pago
       try {
         if (updatedBooking) {
+          console.log(`📧 Preparando email de confirmación...`);
+          console.log(`📧 Correo del usuario: ${updatedBooking.user.email}`);
+          console.log(`📧 Nombre del usuario: ${updatedBooking.user.name}`);
+          console.log(`📧 Cabaña: ${updatedBooking.cabin.title}`);
+          
           const emailTemplate = getConfirmationEmailTemplate(
             updatedBooking.user.name,
             updatedBooking.cabin.title,
@@ -200,16 +205,18 @@ router.post('/confirm', async (req: Request, res: Response) => {
             updatedBooking.bookingNumber
           );
 
-          await sendEmail({
+          const emailResult = await sendEmail({
             to: updatedBooking.user.email,
             subject: `✓ Reserva Confirmada - ${updatedBooking.bookingNumber}`,
             html: emailTemplate
           });
 
-          console.log(`📧 Email de confirmación enviado a ${updatedBooking.user.email}`);
+          console.log(`✅ Email de confirmación enviado a ${updatedBooking.user.email}`);
+          console.log(`✅ Respuesta del servidor de email:`, emailResult);
         }
       } catch (emailError) {
-        console.error('Error al enviar email de confirmación:', emailError);
+        console.error('❌ Error al enviar email de confirmación:', emailError);
+        console.error('❌ Stack trace:', emailError instanceof Error ? emailError.stack : 'Sin stack');
         // No fallar la confirmación de pago si el email falla
       }
 

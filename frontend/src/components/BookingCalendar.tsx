@@ -6,6 +6,7 @@ interface BookingCalendarProps {
   cabinId: string;
   price: number;
   onClose: () => void;
+  onSelectDates?: (checkIn: string, checkOut: string) => void;
 }
 
 interface Booking {
@@ -13,7 +14,7 @@ interface Booking {
   checkOut: string;
 }
 
-export const BookingCalendar: React.FC<BookingCalendarProps> = ({ cabinId, price, onClose }) => {
+export const BookingCalendar: React.FC<BookingCalendarProps> = ({ cabinId, price, onClose, onSelectDates }) => {
   const navigate = useNavigate();
   const [currentDate, setCurrentDate] = useState(new Date(new Date().getFullYear(), new Date().getMonth(), 1));
   const [checkInDate, setCheckInDate] = useState<Date | null>(null);
@@ -63,8 +64,8 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ cabinId, price
     return date > checkInDate && date < checkOutDate;
   };
 
-  const handleDateClick = (day: number) => {
-    const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+  const handleDateClick = (day: number, month: number, year: number) => {
+    const date = new Date(year, month, day);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
@@ -86,49 +87,23 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ cabinId, price
     }
   };
 
-  const handleReserve = async () => {
+  const handleReserve = () => {
     if (!checkInDate || !checkOutDate) {
       alert('Selecciona fechas de entrada y salida');
       return;
     }
 
-    const token = localStorage.getItem('token');
-    if (!token) {
-      navigate('/login');
-      return;
+    // Guardar las fechas en el formato adecuado
+    const checkInStr = checkInDate.toISOString().split('T')[0];
+    const checkOutStr = checkOutDate.toISOString().split('T')[0];
+
+    // Llamar al callback si existe para guardar las fechas en el componente padre
+    if (onSelectDates) {
+      onSelectDates(checkInStr, checkOutStr);
     }
 
-    try {
-      const response = await fetch('http://localhost:3000/api/bookings', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          cabinId,
-          checkIn: checkInDate.toISOString().split('T')[0],
-          checkOut: checkOutDate.toISOString().split('T')[0]
-        })
-      });
-
-      if (response.ok) {
-        const bookingData = await response.json();
-        const bookingId = bookingData.id;
-        
-        console.log('✅ Reserva creada exitosamente:', bookingId);
-        
-        // Redirigir al componente de pago con Flow
-        onClose();
-        navigate(`/payment/${bookingId}`);
-      } else {
-        const error = await response.json();
-        alert('Error: ' + error.error);
-      }
-    } catch (err) {
-      console.error('Error al reservar:', err);
-      alert('Error al realizar la reserva');
-    }
+    // Cerrar el modal
+    onClose();
   };
 
   const daysInMonth = getDaysInMonth(currentDate);
@@ -146,7 +121,32 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ cabinId, price
       <div className="booking-calendar-modal" onClick={(e) => e.stopPropagation()}>
         <button className="close-btn" onClick={onClose}>✕</button>
 
-        <h2>Selecciona tus fechas</h2>
+        <div className="calendar-header-section">
+          <button 
+            className="month-nav-btn"
+            onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1))}
+          >
+            ←
+          </button>
+          <div className="date-range-display">
+            {checkInDate && checkOutDate && (
+              <>
+                <span className="date-label">{checkInDate.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}</span>
+                <span className="arrow">→</span>
+                <span className="date-label">{checkOutDate.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}</span>
+              </>
+            )}
+            {(!checkInDate || !checkOutDate) && (
+              <span className="select-dates-hint">Selecciona tus fechas</span>
+            )}
+          </div>
+          <button 
+            className="month-nav-btn"
+            onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1))}
+          >
+            →
+          </button>
+        </div>
 
         {!isLoggedIn && (
           <div className="warning-box">
@@ -155,76 +155,118 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ cabinId, price
           </div>
         )}
 
-        <div className="calendar-container">
-          <div className="calendar-header">
-            <button onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1))}>←</button>
-            <h3>{currentMonth} {currentDate.getFullYear()}</h3>
-            <button onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1))}>→</button>
+        <div className="dual-calendar-container">
+          {[0, 1].map((offset) => {
+            const displayDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + offset, 1);
+            const daysInMonth = getDaysInMonth(displayDate);
+            const firstDay = getFirstDayOfMonth(displayDate);
+            const days: (number | null)[] = [...Array(firstDay).fill(null), ...Array.from({ length: daysInMonth }, (_, i) => i + 1)];
+            const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+            const displayMonth = monthNames[displayDate.getMonth()];
+
+            return (
+              <div key={offset} className="single-calendar">
+                <div className="calendar-month-header">
+                  <h3>{displayMonth} de {displayDate.getFullYear()}</h3>
+                </div>
+
+                <div className="calendar-weekdays">
+                  <div>L</div>
+                  <div>M</div>
+                  <div>M</div>
+                  <div>J</div>
+                  <div>V</div>
+                  <div>S</div>
+                  <div>D</div>
+                </div>
+
+                <div className="calendar-days">
+                  {days.map((day, idx) => {
+                    if (day === null) return <div key={idx} className="empty"></div>;
+
+                    const date = new Date(displayDate.getFullYear(), displayDate.getMonth(), day);
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    const isToday = date.toDateString() === today.toDateString();
+                    const isPast = date < today;
+                    const isOccupied = isDateOccupied(date);
+                    const isCheckIn = checkInDate?.toDateString() === date.toDateString();
+                    const isCheckOut = checkOutDate?.toDateString() === date.toDateString();
+                    const isBetween = isDateBetweenSelection(date);
+
+                    let className = 'calendar-day';
+                    if (isPast) className += ' past';
+                    if (isOccupied) className += ' occupied';
+                    if (isCheckIn || isCheckOut) className += ' selected';
+                    if (isBetween) className += ' between';
+                    if (isToday) className += ' today';
+                    if (!isPast && !isOccupied) className += ' available';
+
+                    return (
+                      <button
+                        key={idx}
+                        className={className}
+                        onClick={() => handleDateClick(day, displayDate.getMonth(), displayDate.getFullYear())}
+                        disabled={isPast || isOccupied}
+                        title={isOccupied ? 'Ocupado' : !isPast ? 'Disponible' : 'Pasado'}
+                      >
+                        {day}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="calendar-legend">
+          <div className="legend-item">
+            <span className="legend-dot available-dot"></span>
+            <span>Disponible</span>
           </div>
-
-          <div className="calendar-weekdays">
-            <div>Lun</div>
-            <div>Mar</div>
-            <div>Mié</div>
-            <div>Jue</div>
-            <div>Vie</div>
-            <div>Sáb</div>
-            <div>Dom</div>
+          <div className="legend-item">
+            <span className="legend-dot occupied-dot"></span>
+            <span>Ocupado</span>
           </div>
-
-          <div className="calendar-days">
-            {days.map((day, idx) => {
-              if (day === null) return <div key={idx} className="empty"></div>;
-
-              const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
-              const today = new Date();
-              today.setHours(0, 0, 0, 0);
-              const isToday = date.toDateString() === today.toDateString();
-              const isPast = date < today;
-              const isOccupied = isDateOccupied(date);
-              const isCheckIn = checkInDate?.toDateString() === date.toDateString();
-              const isCheckOut = checkOutDate?.toDateString() === date.toDateString();
-              const isBetween = isDateBetweenSelection(date);
-
-              let className = 'calendar-day';
-              if (isPast) className += ' past';
-              if (isOccupied) className += ' occupied';
-              if (isCheckIn || isCheckOut) className += ' selected';
-              if (isBetween) className += ' between';
-              if (isToday) className += ' today';
-
-              return (
-                <button
-                  key={idx}
-                  className={className}
-                  onClick={() => handleDateClick(day)}
-                  disabled={isPast || isOccupied}
-                >
-                  {day}
-                </button>
-              );
-            })}
+          <div className="legend-item">
+            <span className="legend-dot selected-dot"></span>
+            <span>Seleccionado</span>
           </div>
         </div>
 
         <div className="booking-summary">
-          <p><strong>Entrada:</strong> {checkInDate?.toLocaleDateString('es-ES') || 'No seleccionada'}</p>
-          <p><strong>Salida:</strong> {checkOutDate?.toLocaleDateString('es-ES') || 'No seleccionada'}</p>
-          {nights > 0 && (
+          {checkInDate && checkOutDate ? (
             <>
-              <p><strong>Noches:</strong> {nights}</p>
-              <p><strong>Total:</strong> ${totalPrice.toLocaleString('es-ES')}</p>
+              <div className="summary-row">
+                <span>Entrada: {checkInDate.toLocaleDateString('es-ES')}</span>
+              </div>
+              <div className="summary-row">
+                <span>Salida: {checkOutDate.toLocaleDateString('es-ES')}</span>
+              </div>
+              <div className="summary-divider"></div>
+              <div className="summary-row">
+                <span><strong>Noches:</strong> {nights}</span>
+                <span><strong>${totalPrice.toLocaleString('es-ES')}</strong></span>
+              </div>
             </>
+          ) : (
+            <div className="summary-placeholder">Selecciona fechas de entrada y salida</div>
           )}
         </div>
 
-        <button 
-          className="reserve-btn" 
-          onClick={handleReserve}
-          disabled={!checkInDate || !checkOutDate || !isLoggedIn}
-        >
-          {isLoggedIn ? 'Reservar ahora' : 'Inicia sesión para reservar'}
-        </button>
+        <div className="calendar-actions">
+          <button className="clear-dates-btn" onClick={() => { setCheckInDate(null); setCheckOutDate(null); }}>
+            Borrar fechas
+          </button>
+          <button 
+            className="reserve-btn" 
+            onClick={handleReserve}
+            disabled={!checkInDate || !checkOutDate || !isLoggedIn}
+          >
+            {isLoggedIn ? 'Enviar' : 'Inicia sesión para reservar'}
+          </button>
+        </div>
       </div>
     </div>
   );

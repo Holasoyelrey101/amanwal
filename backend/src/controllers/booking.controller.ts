@@ -231,6 +231,54 @@ export const deleteBooking = async (req: AuthRequest, res: Response): Promise<vo
 };
 
 /**
+ * Obtiene una reserva específica por ID (solo para el propietario)
+ */
+export const getBookingById = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const userId = req.user?.id;
+
+    if (!id) {
+      res.status(400).json({ error: 'ID de reserva requerido' });
+      return;
+    }
+
+    const booking = await prisma.booking.findUnique({
+      where: { id },
+      include: {
+        cabin: {
+          select: {
+            id: true,
+            title: true,
+            description: true,
+            location: true,
+            price: true,
+            capacity: true,
+            images: true,
+          }
+        }
+      }
+    });
+
+    if (!booking) {
+      res.status(404).json({ error: 'Reserva no encontrada' });
+      return;
+    }
+
+    // Verificar que el usuario sea el propietario
+    if (booking.userId !== userId) {
+      res.status(403).json({ error: 'No tienes permisos para ver esta reserva' });
+      return;
+    }
+
+    res.json(booking);
+  } catch (error) {
+    console.error('Error al obtener reserva:', error);
+    res.status(500).json({ error: 'Error al obtener reserva' });
+  }
+};
+
+/**
  * Permite al usuario confirmar su propia reserva después de pagar
  * Usado después de que Flow redirige de vuelta
  */

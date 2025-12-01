@@ -170,7 +170,7 @@ export const EditCabinModal: React.FC<EditCabinModalProps> = ({
           {/* Información Básica */}
           <div className="form-section">
             <h3>Información Básica</h3>
-            <div className="form-row col-md-4">
+            <div className="form-row col-md-2">
               <div className="form-group">
                 <label htmlFor="title">Título</label>
                 <input
@@ -193,6 +193,8 @@ export const EditCabinModal: React.FC<EditCabinModalProps> = ({
                   required
                 />
               </div>
+            </div>
+            <div className="form-row col-md-1">
               <div className="form-group">
                 <label htmlFor="description">Descripción</label>
                 <textarea

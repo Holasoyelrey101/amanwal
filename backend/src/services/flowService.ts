@@ -200,11 +200,13 @@ class FlowService {
   /**
    * Verifica si un pago fue exitoso
    * Status 1 = Pago completado
+   * Status 2 = Pago aprobado (también exitoso)
    * Status 0 = Pago pendiente
    * Status -1 = Pago rechazado
+   * Status 3 = Pago rechazado (por Flow)
    */
   isPaymentSuccessful(status: number): boolean {
-    return status === 1;
+    return status === 1 || status === 2;
   }
 
   isPaymentPending(status: number): boolean {
@@ -212,7 +214,7 @@ class FlowService {
   }
 
   isPaymentRejected(status: number): boolean {
-    return status === -1;
+    return status === -1 || status === 3;
   }
 }
 

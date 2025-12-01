@@ -10,6 +10,15 @@ const transporter = nodemailer.createTransport({
   }
 });
 
+// Verificar la conexión al iniciar
+transporter.verify((error, success) => {
+  if (error) {
+    console.error('❌ Error en configuración de email:', error);
+  } else {
+    console.log('✅ Servidor de email está listo');
+  }
+});
+
 interface EmailOptions {
   to: string;
   subject: string;
@@ -18,6 +27,9 @@ interface EmailOptions {
 
 export const sendEmail = async (options: EmailOptions) => {
   try {
+    console.log(`📧 Intentando enviar email a: ${options.to}`);
+    console.log(`📧 Usuario del email: ${process.env.EMAIL_USER}`);
+    
     const mailOptions = {
       from: process.env.EMAIL_USER || 'Amanwal <noreply@amanwal.com>',
       to: options.to,
@@ -26,10 +38,10 @@ export const sendEmail = async (options: EmailOptions) => {
     };
 
     const info = await transporter.sendMail(mailOptions);
-    console.log('Email enviado:', info.response);
+    console.log('✅ Email enviado exitosamente:', info.response);
     return info;
   } catch (error) {
-    console.error('Error al enviar email:', error);
+    console.error('❌ Error al enviar email:', error);
     throw error;
   }
 };

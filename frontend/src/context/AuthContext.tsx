@@ -1,4 +1,5 @@
 import React, { ReactNode, useContext, useEffect, useRef, useState } from 'react';
+import axios from 'axios';
 
 interface User {
   id: string;
@@ -14,6 +15,7 @@ interface AuthContextType {
   logout: () => void;
   isAuthenticated: boolean;
   isAdmin: boolean;
+  refreshUser?: () => Promise<void>;
 }
 
 const AuthContext = React.createContext<AuthContextType | undefined>(undefined);
@@ -31,6 +33,24 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   // Tiempo de inactividad (ms). Ajusta según necesidad.
   const INACTIVITY_TIMEOUT = 15 * 60 * 1000; // 15 minutos
   const inactivityTimerRef = useRef<number | null>(null);
+
+  const refreshUser = async () => {
+    try {
+      if (!token) return;
+      
+      const response = await axios.get('/api/auth/current-role', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (response.data.role && user) {
+        const updatedUser = { ...user, role: response.data.role };
+        setUser(updatedUser);
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+      }
+    } catch (error) {
+      console.error('Error refreshing user role:', error);
+    }
+  };
 
   const login = (newUser: User, newToken: string) => {
     setUser(newUser);
@@ -57,6 +77,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       setToken(null);
       // Marca que la app ya ha cargado
       sessionStorage.setItem('app_loaded', 'true');
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Validar y sincronizar el rol del usuario en el cargue de la app
+  useEffect(() => {
+    if (token && user) {
+      refreshUser();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -103,6 +131,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     logout,
     isAuthenticated: !!token,
     isAdmin: user?.role === 'admin',
+    refreshUser,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

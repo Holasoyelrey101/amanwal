@@ -1,6 +1,8 @@
 import { Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { AuthRequest } from '../middleware/auth.middleware';
+// @ts-ignore
+import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
@@ -8,40 +10,37 @@ export const getDashboardStats = async (req: AuthRequest, res: Response): Promis
   try {
     const totalUsers = await prisma.user.count();
     const totalCabins = await prisma.cabin.count();
+    
+    // Solo contar reservas activas (no canceladas ni completadas)
     const totalBookings = await prisma.booking.count({
-      where: { status: 'confirmed' }
+      where: {
+        status: {
+          in: ['pending', 'confirmed']
+        }
+      }
     });
+    
     const totalReviews = await prisma.review.count();
 
-    const recentUsers = await prisma.user.findMany({
-      take: 5,
-      orderBy: { createdAt: 'desc' },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        role: true,
-        createdAt: true,
-      },
-    });
-
-    const recentBookings = await prisma.booking.findMany({
-      take: 5,
-      orderBy: { createdAt: 'desc' },
-      include: {
-        cabin: { select: { title: true } },
-        user: { select: { name: true, email: true } },
+    // Contar reservas activas recientes (últimos 7 días)
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    const recentBookings = await prisma.booking.count({
+      where: {
+        createdAt: {
+          gte: sevenDaysAgo,
+        },
+        status: {
+          in: ['pending', 'confirmed']
+        }
       },
     });
 
     res.json({
-      stats: {
-        totalUsers,
-        totalCabins,
-        totalBookings,
-        totalReviews,
-      },
-      recentUsers,
+      totalUsers,
+      totalCabins,
+      totalBookings,
+      totalReviews,
       recentBookings,
     });
   } catch (error) {
@@ -118,6 +117,65 @@ export const deleteUser = async (req: AuthRequest, res: Response): Promise<void>
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Error al eliminar usuario' });
+  }
+};
+
+export const updateUser = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { userId } = req.params;
+    const { name, email, password, role } = req.body;
+
+    if (!userId) {
+      res.status(400).json({ error: 'userId es requerido' });
+      return;
+    }
+
+    // Verificar que el usuario existe
+    const existingUser = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!existingUser) {
+      res.status(404).json({ error: 'Usuario no encontrado' });
+      return;
+    }
+
+    // Preparar datos a actualizar
+    const data: any = {};
+
+    if (name) {
+      data.name = name;
+    }
+
+    if (email) {
+      data.email = email;
+    }
+
+    if (password) {
+      data.password = await bcrypt.hash(password, 10);
+    }
+
+    if (role && ['user', 'admin'].includes(role)) {
+      data.role = role;
+    }
+
+    // Actualizar el usuario
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data,
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        phone: true,
+      },
+    });
+
+    res.json(updatedUser);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error al actualizar usuario' });
   }
 };
 

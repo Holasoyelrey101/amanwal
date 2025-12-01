@@ -6,6 +6,7 @@ import {
   getAllUsers,
   updateUserRole,
   deleteUser,
+  updateUser,
   getAllCabinsAdmin,
   deleteCabinAdmin,
   createCabinAsAdmin,
@@ -21,11 +22,12 @@ const router = Router();
 router.use(authMiddleware, adminMiddleware);
 
 // Dashboard
-router.get('/stats', getDashboardStats);
+router.get('/dashboard', getDashboardStats);
 
 // Usuarios
 router.get('/users', getAllUsers);
 router.patch('/users/:userId/role', updateUserRole);
+router.patch('/users/:userId', updateUser);
 router.delete('/users/:userId', deleteUser);
 
 // Cabañas

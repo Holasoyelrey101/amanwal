@@ -67,27 +67,27 @@ export const CabinList: React.FC = () => {
               )}
               <div className="card-body">
                 <h5 className="card-title">{cabin.title}</h5>
-                <p className="card-text text-muted">{cabin.location}</p>
+                <p className="card-text text-muted"><i className="fa fa-map-marker"></i> {cabin.location}</p>
                 <div className="mb-3">
                   <small className="text-muted d-block">
-                    👥 Capacidad: {cabin.capacity} personas
+                    <i className="fa fa-users"></i> Capacidad maxima: {cabin.capacity} personas
                   </small>
                   <small className="text-muted d-block">
-                    🛏️ Dormitorios: {cabin.bedrooms}
+                    <i className="fa fa-bed"></i> Dormitorios: {cabin.bedrooms}
                   </small>
                   <small className="text-muted d-block">
-                    🚿 Baños: {cabin.bathrooms}
+                    <i className="fa fa-shower"></i> Baños: {cabin.bathrooms}
                   </small>
                 </div>
-                <div className="d-flex justify-content-between align-items-center">
-                  <span className="h5 mb-0">${cabin.price}/noche</span>
-                  <a
-                    href={`/cabins/${cabin.id}`}
-                    className="btn btn-primary btn-sm"
-                  >
-                    Ver Detalles
-                  </a>
+                <div className="cabin-card-footer">
+                  <span className="price">${cabin.price.toLocaleString('es-ES')}/noche</span>
                 </div>
+                <a
+                  href={`/cabins/${cabin.id}`}
+                  className="btn btn-primary w-100 mt-3"
+                >
+                  Ver Detalles
+                </a>
               </div>
             </div>
           </div>

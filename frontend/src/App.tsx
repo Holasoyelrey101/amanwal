@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useParams, useNavigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
@@ -9,10 +9,15 @@ import { Login } from './pages/Login';
 import { Register } from './pages/Register';
 import { CabinList } from './pages/CabinList';
 import { CabinDetail } from './pages/CabinDetail';
+import { BookingSummary } from './pages/BookingSummary';
 import { AdminDashboard } from './pages/AdminDashboard';
+import { AdminUsers } from './pages/AdminUsers';
+import { AdminCabins } from './pages/AdminCabins';
+import { AdminBookings } from './pages/AdminBookings';
 import { Profile } from './pages/Profile';
 import { MyBookings } from './pages/MyBookings';
 import { PaymentResult } from './pages/PaymentResult';
+import { PaymentReturn } from './pages/PaymentReturn';
 import { VerifyEmail } from './pages/VerifyEmail';
 import { ResendVerification } from './pages/ResendVerification';
 import PaymentFlow from './components/PaymentFlow';
@@ -48,10 +53,42 @@ function App() {
               <Route path="/cabins" element={<CabinList />} />
               <Route path="/cabins/:id" element={<CabinDetail />} />
               <Route
+                path="/booking-summary"
+                element={
+                  <PrivateRoute>
+                    <BookingSummary />
+                  </PrivateRoute>
+                }
+              />
+              <Route
                 path="/admin"
                 element={
                   <AdminRoute>
                     <AdminDashboard />
+                  </AdminRoute>
+                }
+              />
+              <Route
+                path="/admin/users"
+                element={
+                  <AdminRoute>
+                    <AdminUsers />
+                  </AdminRoute>
+                }
+              />
+              <Route
+                path="/admin/cabins"
+                element={
+                  <AdminRoute>
+                    <AdminCabins />
+                  </AdminRoute>
+                }
+              />
+              <Route
+                path="/admin/bookings"
+                element={
+                  <AdminRoute>
+                    <AdminBookings />
                   </AdminRoute>
                 }
               />
@@ -83,7 +120,7 @@ function App() {
                 path="/payment-return/:bookingId"
                 element={
                   <PrivateRoute>
-                    <PaymentReturnWrapper />
+                    <PaymentReturn />
                   </PrivateRoute>
                 }
               />
@@ -107,41 +144,413 @@ function App() {
 
 function PaymentFlowWrapper() {
   const { bookingId } = useParams();
-  return <PaymentFlow bookingId={bookingId} />;
+  return <PaymentFlow bookingId={bookingId || ''} />;
 }
 
 function PaymentReturnWrapper() {
   const { bookingId } = useParams();
   const navigate = useNavigate();
-  const [showSuccess, setShowSuccess] = React.useState(false);
+  const [status, setStatus] = React.useState<'loading' | 'success' | 'failed' | 'pending'>('loading');
+  const timeoutRef = React.useRef<NodeJS.Timeout | null>(null);
 
   React.useEffect(() => {
-    const confirmPayment = async () => {
+    const checkPaymentStatus = async () => {
       try {
         if (!bookingId) {
-          navigate('/my-bookings');
+          setStatus('failed');
           return;
         }
 
-        // Confirmar la reserva del usuario
-        await apiClient.patch(`/bookings/${bookingId}/confirm`, {});
-        console.log('Reserva confirmada automáticamente');
+        // Obtener el estado de la reserva y el pago
+        const response = await apiClient.get(`/bookings/${bookingId}`);
+        const bookingData = response.data;
+
+        // Verificar el estado del pago basado en paymentStatus
+        if (bookingData.paymentStatus === 'success' || bookingData.paymentStatus === 'completed') {
+          // Confirmar la reserva automáticamente
+          try {
+            await apiClient.patch(`/bookings/${bookingId}/confirm`, {});
+          } catch (error) {
+            console.error('Error al confirmar reserva:', error);
+          }
+          setStatus('success');
+
+          // Redirigir después de 5 segundos
+          timeoutRef.current = setTimeout(() => {
+            navigate('/my-bookings');
+          }, 5000);
+        } else if (bookingData.paymentStatus === 'failed' || bookingData.paymentStatus === 'rejected') {
+          setStatus('failed');
+
+          // Redirigir después de 10 segundos
+          timeoutRef.current = setTimeout(() => {
+            navigate('/my-bookings');
+          }, 10000);
+        } else if (bookingData.paymentStatus === 'pending') {
+          setStatus('pending');
+
+          // Redirigir después de 15 segundos
+          timeoutRef.current = setTimeout(() => {
+            navigate('/my-bookings');
+          }, 15000);
+        } else {
+          setStatus('pending');
+
+          // Redirigir después de 15 segundos
+          timeoutRef.current = setTimeout(() => {
+            navigate('/my-bookings');
+          }, 15000);
+        }
       } catch (error) {
-        console.error('Error al confirmar reserva:', error);
-        // Continuar de todas formas
+        console.error('Error al verificar estado del pago:', error);
+        setStatus('pending');
+
+        // Redirigir después de 15 segundos
+        timeoutRef.current = setTimeout(() => {
+          navigate('/my-bookings');
+        }, 15000);
       }
-
-      // Mostrar el mensaje de éxito
-      setShowSuccess(true);
-
-      // Después de 5 segundos redirigir a mis reservas
-      setTimeout(() => {
-        navigate('/my-bookings');
-      }, 5000);
     };
 
-    confirmPayment();
+    checkPaymentStatus();
+
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
   }, [bookingId, navigate]);
+
+  const renderContent = () => {
+    if (status === 'success') {
+      return (
+        <>
+          <div className="success-emoji" style={{
+            fontSize: '100px',
+            marginBottom: '30px',
+            display: 'inline-block'
+          }}>
+            ✅
+          </div>
+          
+          <h1 style={{
+            color: '#667eea',
+            fontSize: '36px',
+            marginBottom: '15px',
+            fontWeight: 'bold',
+            margin: '0 0 15px 0'
+          }}>
+            ¡Pago Realizado!
+          </h1>
+
+          <div style={{
+            height: '4px',
+            width: '80px',
+            background: 'linear-gradient(90deg, #667eea 0%, #764ba2 100%)',
+            margin: '20px auto',
+            borderRadius: '2px'
+          }}></div>
+
+          <p style={{
+            fontSize: '18px',
+            color: '#333',
+            marginBottom: '15px',
+            lineHeight: '1.6',
+            fontWeight: '500'
+          }}>
+            Tu pago ha sido procesado exitosamente.
+          </p>
+
+          <p style={{
+            fontSize: '15px',
+            color: '#666',
+            marginBottom: '30px',
+            lineHeight: '1.5'
+          }}>
+            Tu reserva ha sido confirmada. Puedes ver todos los detalles en la sección <strong>"Mis Reservas"</strong>.
+          </p>
+
+          <div style={{
+            backgroundColor: '#f0f4ff',
+            padding: '20px',
+            borderRadius: '10px',
+            marginBottom: '30px',
+            border: '2px solid #e0e8ff'
+          }}>
+            <p style={{
+              fontSize: '14px',
+              color: '#667eea',
+              margin: 0,
+              fontWeight: '500'
+            }}>
+              📧 Revisa tu correo para el comprobante de la reserva
+            </p>
+          </div>
+
+          <div style={{
+            fontSize: '14px',
+            color: '#999',
+            fontStyle: 'italic'
+          }}>
+            Redirigiendo en unos momentos...
+          </div>
+
+          {/* Barra de progreso */}
+          <div style={{
+            marginTop: '20px',
+            height: '3px',
+            backgroundColor: '#e0e0e0',
+            borderRadius: '3px',
+            overflow: 'hidden'
+          }}>
+            <div style={{
+              height: '100%',
+              background: 'linear-gradient(90deg, #667eea 0%, #764ba2 100%)',
+              animation: 'slideRight 5s ease-out forwards',
+              borderRadius: '3px'
+            }}></div>
+          </div>
+        </>
+      );
+    } else if (status === 'failed') {
+      return (
+        <>
+          <div className="success-emoji" style={{
+            fontSize: '100px',
+            marginBottom: '30px',
+            display: 'inline-block'
+          }}>
+            ❌
+          </div>
+          
+          <h1 style={{
+            color: '#e74c3c',
+            fontSize: '36px',
+            marginBottom: '15px',
+            fontWeight: 'bold',
+            margin: '0 0 15px 0'
+          }}>
+            Pago Rechazado
+          </h1>
+
+          <div style={{
+            height: '4px',
+            width: '80px',
+            background: '#e74c3c',
+            margin: '20px auto',
+            borderRadius: '2px'
+          }}></div>
+
+          <p style={{
+            fontSize: '18px',
+            color: '#333',
+            marginBottom: '15px',
+            lineHeight: '1.6',
+            fontWeight: '500'
+          }}>
+            No pudimos procesar tu pago.
+          </p>
+
+          <p style={{
+            fontSize: '15px',
+            color: '#666',
+            marginBottom: '30px',
+            lineHeight: '1.5'
+          }}>
+            Por favor intenta de nuevo o usa otro método de pago.
+          </p>
+
+          <div style={{
+            backgroundColor: '#ffe6e6',
+            padding: '20px',
+            borderRadius: '10px',
+            marginBottom: '30px',
+            border: '2px solid #ffcccc'
+          }}>
+            <p style={{
+              fontSize: '14px',
+              color: '#e74c3c',
+              margin: 0,
+              fontWeight: '500'
+            }}>
+              Si persiste el problema, contacta con soporte
+            </p>
+          </div>
+
+          <div style={{
+            fontSize: '14px',
+            color: '#999',
+            fontStyle: 'italic'
+          }}>
+            Redirigiendo en 10 segundos...
+          </div>
+
+          {/* Barra de progreso */}
+          <div style={{
+            marginTop: '20px',
+            height: '3px',
+            backgroundColor: '#e0e0e0',
+            borderRadius: '3px',
+            overflow: 'hidden'
+          }}>
+            <div style={{
+              height: '100%',
+              background: '#e74c3c',
+              animation: 'slideRight 10s ease-out forwards',
+              borderRadius: '3px'
+            }}></div>
+          </div>
+        </>
+      );
+    } else if (status === 'pending') {
+      return (
+        <>
+          <div style={{
+            fontSize: '60px',
+            marginBottom: '20px',
+            animation: 'pulse 1.5s ease-in-out infinite'
+          }}>
+            ⏳
+          </div>
+          <h2 style={{
+            color: '#f39c12',
+            fontSize: '24px',
+            marginBottom: '15px'
+          }}>
+            Pago Pendiente
+          </h2>
+          <p style={{
+            fontSize: '16px',
+            color: '#666',
+            marginBottom: '20px'
+          }}>
+            Por favor espera mientras procesamos tu pago.
+          </p>
+          <div style={{
+            backgroundColor: '#fff3cd',
+            padding: '20px',
+            borderRadius: '10px',
+            marginBottom: '20px',
+            border: '2px solid #ffc107'
+          }}>
+            <p style={{
+              fontSize: '14px',
+              color: '#856404',
+              margin: 0,
+              fontWeight: '500'
+            }}>
+              ⚠️ No cierres esta página mientras se procesa el pago
+            </p>
+          </div>
+          <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            gap: '8px',
+            marginBottom: '20px'
+          }}>
+            <div style={{
+              width: '8px',
+              height: '8px',
+              backgroundColor: '#f39c12',
+              borderRadius: '50%',
+              animation: 'pulse 1.5s ease-in-out infinite'
+            }}></div>
+            <div style={{
+              width: '8px',
+              height: '8px',
+              backgroundColor: '#f39c12',
+              borderRadius: '50%',
+              animation: 'pulse 1.5s ease-in-out 0.2s infinite'
+            }}></div>
+            <div style={{
+              width: '8px',
+              height: '8px',
+              backgroundColor: '#f39c12',
+              borderRadius: '50%',
+              animation: 'pulse 1.5s ease-in-out 0.4s infinite'
+            }}></div>
+          </div>
+          <div style={{
+            fontSize: '14px',
+            color: '#999',
+            fontStyle: 'italic'
+          }}>
+            Redirigiendo en 15 segundos...
+          </div>
+
+          {/* Barra de progreso */}
+          <div style={{
+            marginTop: '20px',
+            height: '3px',
+            backgroundColor: '#e0e0e0',
+            borderRadius: '3px',
+            overflow: 'hidden'
+          }}>
+            <div style={{
+              height: '100%',
+              background: '#f39c12',
+              animation: 'slideRight 15s ease-out forwards',
+              borderRadius: '3px'
+            }}></div>
+          </div>
+        </>
+      );
+    } else {
+      // loading
+      return (
+        <>
+          <div style={{
+            fontSize: '60px',
+            marginBottom: '20px',
+            animation: 'pulse 1.5s ease-in-out infinite'
+          }}>
+            ⏳
+          </div>
+          <h2 style={{
+            color: '#667eea',
+            fontSize: '24px',
+            marginBottom: '15px'
+          }}>
+            Procesando pago...
+          </h2>
+          <p style={{
+            fontSize: '16px',
+            color: '#666',
+            marginBottom: '20px'
+          }}>
+            Por favor espera un momento mientras confirmamos tu pago.
+          </p>
+          <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            gap: '8px'
+          }}>
+            <div style={{
+              width: '8px',
+              height: '8px',
+              backgroundColor: '#667eea',
+              borderRadius: '50%',
+              animation: 'pulse 1.5s ease-in-out infinite'
+            }}></div>
+            <div style={{
+              width: '8px',
+              height: '8px',
+              backgroundColor: '#667eea',
+              borderRadius: '50%',
+              animation: 'pulse 1.5s ease-in-out 0.2s infinite'
+            }}></div>
+            <div style={{
+              width: '8px',
+              height: '8px',
+              backgroundColor: '#667eea',
+              borderRadius: '50%',
+              animation: 'pulse 1.5s ease-in-out 0.4s infinite'
+            }}></div>
+          </div>
+        </>
+      );
+    }
+  };
 
   return (
     <div style={{ 
@@ -177,11 +586,6 @@ function PaymentReturnWrapper() {
           }
         }
         
-        @keyframes fadeIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-        
         .success-container {
           animation: slideDown 0.6s ease-out;
         }
@@ -190,12 +594,13 @@ function PaymentReturnWrapper() {
           animation: pulse 1.5s ease-in-out infinite;
         }
         
-        .success-confetti {
-          position: fixed;
-          width: 10px;
-          height: 10px;
-          background: #FFD700;
-          pointer-events: none;
+        @keyframes slideRight {
+          from {
+            width: 0%;
+          }
+          to {
+            width: 100%;
+          }
         }
       `}</style>
 
@@ -220,158 +625,8 @@ function PaymentReturnWrapper() {
           background: 'linear-gradient(90deg, #667eea 0%, #764ba2 100%)'
         }}></div>
 
-        {showSuccess ? (
-          <>
-            <div className="success-emoji" style={{
-              fontSize: '100px',
-              marginBottom: '30px',
-              display: 'inline-block'
-            }}>
-              ✅
-            </div>
-            
-            <h1 style={{
-              color: '#667eea',
-              fontSize: '36px',
-              marginBottom: '15px',
-              fontWeight: 'bold',
-              margin: '0 0 15px 0'
-            }}>
-              ¡Pago Realizado!
-            </h1>
-
-            <div style={{
-              height: '4px',
-              width: '80px',
-              background: 'linear-gradient(90deg, #667eea 0%, #764ba2 100%)',
-              margin: '20px auto',
-              borderRadius: '2px'
-            }}></div>
-
-            <p style={{
-              fontSize: '18px',
-              color: '#333',
-              marginBottom: '15px',
-              lineHeight: '1.6',
-              fontWeight: '500'
-            }}>
-              Tu pago ha sido procesado exitosamente.
-            </p>
-
-            <p style={{
-              fontSize: '15px',
-              color: '#666',
-              marginBottom: '30px',
-              lineHeight: '1.5'
-            }}>
-              Tu reserva ha sido confirmada. Puedes ver todos los detalles en la sección <strong>"Mis Reservas"</strong>.
-            </p>
-
-            <div style={{
-              backgroundColor: '#f0f4ff',
-              padding: '20px',
-              borderRadius: '10px',
-              marginBottom: '30px',
-              border: '2px solid #e0e8ff'
-            }}>
-              <p style={{
-                fontSize: '14px',
-                color: '#667eea',
-                margin: 0,
-                fontWeight: '500'
-              }}>
-                📧 Revisa tu correo para el comprobante de la reserva
-              </p>
-            </div>
-
-            <div style={{
-              fontSize: '14px',
-              color: '#999',
-              fontStyle: 'italic'
-            }}>
-              Redirigiendo en unos momentos...
-            </div>
-
-            {/* Barra de progreso */}
-            <div style={{
-              marginTop: '20px',
-              height: '3px',
-              backgroundColor: '#e0e0e0',
-              borderRadius: '3px',
-              overflow: 'hidden'
-            }}>
-              <div style={{
-                height: '100%',
-                background: 'linear-gradient(90deg, #667eea 0%, #764ba2 100%)',
-                animation: 'slideRight 5s ease-out forwards',
-                borderRadius: '3px'
-              }}></div>
-            </div>
-          </>
-        ) : (
-          <>
-            <div style={{
-              fontSize: '60px',
-              marginBottom: '20px',
-              animation: 'pulse 1.5s ease-in-out infinite'
-            }}>
-              ⏳
-            </div>
-            <h2 style={{
-              color: '#667eea',
-              fontSize: '24px',
-              marginBottom: '15px'
-            }}>
-              Procesando pago...
-            </h2>
-            <p style={{
-              fontSize: '16px',
-              color: '#666',
-              marginBottom: '20px'
-            }}>
-              Por favor espera un momento mientras confirmamos tu pago.
-            </p>
-            <div style={{
-              display: 'flex',
-              justifyContent: 'center',
-              gap: '8px'
-            }}>
-              <div style={{
-                width: '8px',
-                height: '8px',
-                backgroundColor: '#667eea',
-                borderRadius: '50%',
-                animation: 'pulse 1.5s ease-in-out infinite'
-              }}></div>
-              <div style={{
-                width: '8px',
-                height: '8px',
-                backgroundColor: '#667eea',
-                borderRadius: '50%',
-                animation: 'pulse 1.5s ease-in-out 0.2s infinite'
-              }}></div>
-              <div style={{
-                width: '8px',
-                height: '8px',
-                backgroundColor: '#667eea',
-                borderRadius: '50%',
-                animation: 'pulse 1.5s ease-in-out 0.4s infinite'
-              }}></div>
-            </div>
-          </>
-        )}
+        {renderContent()}
       </div>
-
-      <style>{`
-        @keyframes slideRight {
-          from {
-            width: 0%;
-          }
-          to {
-            width: 100%;
-          }
-        }
-      `}</style>
     </div>
   );
 }

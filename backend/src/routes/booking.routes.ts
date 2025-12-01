@@ -6,6 +6,7 @@ const router = Router();
 
 router.post('/', authMiddleware, bookingController.createBooking);
 router.get('/cabin/:cabinId', bookingController.getCabinBookings);
+router.get('/:id', authMiddleware, bookingController.getBookingById);
 router.get('/', authMiddleware, bookingController.getMyBookings);
 router.patch('/:id/cancel', authMiddleware, bookingController.cancelBooking);
 router.patch('/:id/confirm', authMiddleware, bookingController.confirmUserBooking);

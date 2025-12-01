@@ -426,3 +426,32 @@ export const resendVerificationEmail = async (req: AuthRequest, res: Response): 
     res.status(500).json({ error: 'Error al reenviar email' });
   }
 };
+
+/**
+ * Obtiene el rol actual del usuario desde la base de datos
+ */
+export const getCurrentRole = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const userId = req.user?.id;
+
+    if (!userId) {
+      res.status(401).json({ error: 'Usuario no autenticado' });
+      return;
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { role: true },
+    });
+
+    if (!user) {
+      res.status(404).json({ error: 'Usuario no encontrado' });
+      return;
+    }
+
+    res.json({ role: user.role });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error al obtener el rol' });
+  }
+};
