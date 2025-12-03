@@ -1,12 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
+import apiClient from '../api/client';
 import './navbar.css';
+
+interface Ticket {
+  id: string;
+  status: string;
+  messages: Array<{ id: string; createdAt: string }>;
+}
 
 export const Navbar: React.FC = () => {
   const { isAuthenticated, user, logout, isAdmin } = useAuth();
   const [showDropdown, setShowDropdown] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
+  const [lastCheckTime, setLastCheckTime] = useState<string>(localStorage.getItem('lastTicketCheck') || new Date().toISOString());
 
   useEffect(() => {
     const handleScroll = () => {
@@ -16,10 +25,53 @@ export const Navbar: React.FC = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Verificar notificaciones cada 5 segundos
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    const checkNotifications = async () => {
+      try {
+        const response = await apiClient.get('/support/my-tickets');
+        const tickets = response.data as Ticket[];
+        
+        let notificationCount = 0;
+        
+        tickets.forEach(ticket => {
+          // Contar mensajes más recientes que el último check
+          const newMessages = ticket.messages?.filter(msg => 
+            new Date(msg.createdAt) > new Date(lastCheckTime)
+          ) || [];
+          
+          if (newMessages.length > 0) {
+            notificationCount += newMessages.length;
+          }
+        });
+        
+        setUnreadNotifications(notificationCount);
+      } catch (error) {
+        console.error('Error checking notifications:', error);
+      }
+    };
+
+    checkNotifications();
+    const interval = setInterval(checkNotifications, 5000);
+    
+    return () => clearInterval(interval);
+  }, [isAuthenticated, lastCheckTime]);
+
+  const markNotificationsAsRead = () => {
+    const now = new Date().toISOString();
+    localStorage.setItem('lastTicketCheck', now);
+    setLastCheckTime(now);
+    setUnreadNotifications(0);
+  };
+
   const handleLogout = () => {
     logout();
     window.location.href = '/';
   };
+
+  const isSupportOrAdmin = user?.role === 'admin' || user?.role === 'soporte';
 
   return (
     <nav className={`navbar-premium ${scrolled ? 'scrolled' : ''}`}>
@@ -38,10 +90,23 @@ export const Navbar: React.FC = () => {
           </Link>
 
           {isAuthenticated && (
-            <Link to="/my-bookings" className="nav-link-premium">
-              <i className="fa fa-calendar"></i>
-              <span>Mis Reservas</span>
-            </Link>
+            <>
+              <Link to="/my-bookings" className="nav-link-premium">
+                <i className="fa fa-calendar"></i>
+                <span>Mis Reservas</span>
+              </Link>
+              <Link 
+                to="/my-tickets" 
+                className="nav-link-premium nav-link-with-badge"
+                onClick={markNotificationsAsRead}
+              >
+                <i className="fa fa-ticket"></i>
+                <span>Mis Tickets</span>
+                {unreadNotifications > 0 && (
+                  <span className="notification-badge">{unreadNotifications > 99 ? '99+' : unreadNotifications}</span>
+                )}
+              </Link>
+            </>
           )}
         </div>
 
@@ -71,6 +136,19 @@ export const Navbar: React.FC = () => {
                       >
                         <i className="fa fa-cog"></i>
                         <span>Panel de Admin</span>
+                      </Link>
+                      <div className="dropdown-divider"></div>
+                    </>
+                  )}
+                  {isSupportOrAdmin && (
+                    <>
+                      <Link 
+                        to="/support" 
+                        className="dropdown-item support-item"
+                        onClick={() => setShowDropdown(false)}
+                      >
+                        <i className="fa fa-headset"></i>
+                        <span>Panel de Soporte</span>
                       </Link>
                       <div className="dropdown-divider"></div>
                     </>

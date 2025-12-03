@@ -14,6 +14,8 @@ import { AdminDashboard } from './pages/AdminDashboard';
 import { AdminUsers } from './pages/AdminUsers';
 import { AdminCabins } from './pages/AdminCabins';
 import { AdminBookings } from './pages/AdminBookings';
+import { SupportPanel } from './pages/SupportPanel';
+import { MyTickets } from './pages/MyTickets';
 import { Profile } from './pages/Profile';
 import { MyBookings } from './pages/MyBookings';
 import { PaymentResult } from './pages/PaymentResult';
@@ -34,6 +36,12 @@ const PrivateRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => 
 const AdminRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAdmin } = useAuth();
   return isAdmin ? <>{children}</> : <Navigate to="/" />;
+};
+
+const SupportRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { user } = useAuth();
+  const isSupportOrAdmin = user?.role === 'admin' || user?.role === 'soporte';
+  return isSupportOrAdmin ? <>{children}</> : <Navigate to="/" />;
 };
 
 function App() {
@@ -90,6 +98,22 @@ function App() {
                   <AdminRoute>
                     <AdminBookings />
                   </AdminRoute>
+                }
+              />
+              <Route
+                path="/support"
+                element={
+                  <SupportRoute>
+                    <SupportPanel />
+                  </SupportRoute>
+                }
+              />
+              <Route
+                path="/my-tickets"
+                element={
+                  <PrivateRoute>
+                    <MyTickets />
+                  </PrivateRoute>
                 }
               />
               <Route

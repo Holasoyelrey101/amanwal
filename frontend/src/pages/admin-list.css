@@ -357,6 +357,20 @@
   box-shadow: 0 0 12px rgba(59, 130, 246, 0.15);
 }
 
+.admin-list-badge.soporte {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.25) 0%, rgba(22, 163, 74, 0.15) 100%);
+  color: #86efac;
+  border-color: rgba(34, 197, 94, 0.4);
+  box-shadow: 0 0 12px rgba(34, 197, 94, 0.15);
+}
+
+.admin-list-badge.developer {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.25) 0%, rgba(79, 70, 229, 0.15) 100%);
+  color: #a5b4fc;
+  border-color: rgba(99, 102, 241, 0.4);
+  box-shadow: 0 0 12px rgba(99, 102, 241, 0.15);
+}
+
 /* Action Buttons */
 .admin-list-btn-group {
   display: flex;

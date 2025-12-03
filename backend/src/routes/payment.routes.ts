@@ -208,7 +208,8 @@ router.post('/confirm', async (req: Request, res: Response) => {
           const emailResult = await sendEmail({
             to: updatedBooking.user.email,
             subject: `✓ Reserva Confirmada - ${updatedBooking.bookingNumber}`,
-            html: emailTemplate
+            html: emailTemplate,
+            fromName: '🏠 Amanwal Reservas'
           });
 
           console.log(`✅ Email de confirmación enviado a ${updatedBooking.user.email}`);

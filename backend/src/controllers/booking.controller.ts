@@ -179,7 +179,8 @@ export const cancelBooking = async (req: AuthRequest, res: Response): Promise<vo
       await sendEmail({
         to: updatedBooking.user.email,
         subject: `❌ Reserva Cancelada - ${updatedBooking.bookingNumber}`,
-        html: emailTemplate
+        html: emailTemplate,
+        fromName: '🏠 Amanwal Reservas'
       });
     } catch (emailError) {
       console.error('Error al enviar email de cancelación:', emailError);

@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { ThemeSelector } from '../components/ThemeSelector';
+import { RoleAssignmentModal } from '../components/RoleAssignmentModal';
 import { useAuth } from '../context/AuthContext';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowLeft, faEdit, faTrash, faPlus, faMagnifyingGlass, faCrown, faUser, faEnvelope, faCalendarAlt, faHome, faClock, faChevronLeft, faChevronRight, faUsers, faLock } from '@fortawesome/free-solid-svg-icons';
+import { faArrowLeft, faEdit, faTrash, faPlus, faMagnifyingGlass, faCrown, faUser, faEnvelope, faCalendarAlt, faHome, faClock, faChevronLeft, faChevronRight, faUsers, faLock, faShield, faHeadset, faCode } from '@fortawesome/free-solid-svg-icons';
 import './admin.css';
 import './admin-list.css';
 
@@ -29,7 +30,10 @@ export const AdminUsers: React.FC = () => {
   const [editForm, setEditForm] = useState({ name: '', email: '', password: '', makeAdmin: false });
   const [showEditModal, setShowEditModal] = useState(false);
   const [confirmModal, setConfirmModal] = useState<{ show: boolean; message: string; action: () => void } | null>(null);
+  const [roleModalOpen, setRoleModalOpen] = useState(false);
+  const [selectedUserForRole, setSelectedUserForRole] = useState<User | null>(null);
   const navigate = useNavigate();
+  const { token } = useAuth();
   const { refreshUser } = useAuth();
   const itemsPerPage = 10;
 
@@ -233,14 +237,24 @@ export const AdminUsers: React.FC = () => {
                     <td>{user.name}</td>
                     <td>
                       <span className={`admin-list-badge ${(user.role || 'user').toLowerCase()}`}>
-                        <FontAwesomeIcon icon={user.role === 'admin' ? faCrown : faUser} />
-                        {user.role === 'admin' ? 'Admin' : 'Usuario'}
+                        <FontAwesomeIcon icon={user.role === 'admin' ? faCrown : user.role === 'soporte' ? faHeadset : user.role === 'developer' ? faCode : faUser} />
+                        {user.role === 'admin' ? 'Admin' : user.role === 'soporte' ? 'Soporte' : user.role === 'developer' ? 'Developer' : 'Usuario'}
                       </span>
                     </td>
                     <td>{new Date(user.createdAt).toLocaleDateString()}</td>
                     <td className="text-center">{user._count?.cabins || 0}</td>
                     <td className="text-center">{user._count?.bookings || 0}</td>
                     <td className="actions-cell">
+                      <button
+                        className="admin-btn primary sm"
+                        onClick={() => {
+                          setSelectedUserForRole(user);
+                          setRoleModalOpen(true);
+                        }}
+                        title="Asignar rango al usuario"
+                      >
+                        <FontAwesomeIcon icon={faShield} /> Rango
+                      </button>
                       <button
                         className="admin-btn primary sm"
                         onClick={() => handleEditClick(user)}
@@ -434,6 +448,22 @@ export const AdminUsers: React.FC = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Role Assignment Modal */}
+      {selectedUserForRole && (
+        <RoleAssignmentModal
+          isOpen={roleModalOpen}
+          onClose={() => {
+            setRoleModalOpen(false);
+            setSelectedUserForRole(null);
+          }}
+          userId={selectedUserForRole.id}
+          userName={selectedUserForRole.name}
+          currentRole={selectedUserForRole.role || 'user'}
+          onRoleUpdated={fetchUsers}
+          token={token || ''}
+        />
       )}
     </div>
   );

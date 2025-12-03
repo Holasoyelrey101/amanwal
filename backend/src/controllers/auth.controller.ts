@@ -6,7 +6,7 @@ import bcrypt from 'bcryptjs';
 import { isEmail } from 'validator';
 import crypto from 'crypto';
 import { AuthRequest } from '../middleware/auth.middleware';
-import { sendEmail } from '../utils/emailService';
+import { sendEmail, getVerificationEmailTemplate } from '../utils/emailService';
 
 const prisma = new PrismaClient();
 
@@ -80,25 +80,12 @@ export const register = async (req: AuthRequest, res: Response): Promise<void> =
     const verificationUrl = `${process.env.FRONTEND_URL}/verify-email/${verificationToken}`;
     
     try {
-      const emailHtml = `
-        <h2>¡Bienvenido a Amanwal!</h2>
-        <p>Hola ${name},</p>
-        <p>Para completar tu registro, necesitas verificar tu email.</p>
-        <p>
-          <a href="${verificationUrl}" style="background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">
-            Verificar Email
-          </a>
-        </p>
-        <p>O copia este enlace en tu navegador:</p>
-        <p><code>${verificationUrl}</code></p>
-        <p>Este enlace expira en 24 horas.</p>
-        <p>Si no creaste esta cuenta, ignora este correo.</p>
-      `;
+      const emailTemplate = getVerificationEmailTemplate(name, verificationUrl);
 
       await sendEmail({
         to: email,
         subject: '✓ Verifica tu email en Amanwal',
-        html: emailHtml,
+        html: emailTemplate,
       });
 
       console.log(`📧 Email de verificación enviado a ${email}`);
@@ -401,22 +388,12 @@ export const resendVerificationEmail = async (req: AuthRequest, res: Response): 
     const verificationUrl = `${process.env.FRONTEND_URL}/verify-email/${verificationToken}`;
     
     try {
-      const emailHtml = `
-        <h2>Verifica tu email en Amanwal</h2>
-        <p>Hola ${user.name},</p>
-        <p>Este es el enlace de verificación para tu cuenta:</p>
-        <p>
-          <a href="${verificationUrl}" style="background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">
-            Verificar Email
-          </a>
-        </p>
-        <p>Este enlace expira en 24 horas.</p>
-      `;
+      const emailTemplate = getVerificationEmailTemplate(user.name, verificationUrl);
 
       await sendEmail({
         to: email,
         subject: '✓ Verifica tu email en Amanwal',
-        html: emailHtml,
+        html: emailTemplate,
       });
 
       res.json({ message: 'Email de verificación reenviado exitosamente' });

@@ -177,9 +177,11 @@ export const Profile: React.FC = () => {
               </div>
               <h3 className="profile-name">{profile.name}</h3>
               <p className="profile-email">{profile.email}</p>
-              <div className={`role-badge ${profile.role === 'admin' ? 'admin' : 'user'}`}>
-                <i className={`fa ${profile.role === 'admin' ? 'fa-shield' : 'fa-user-circle'}`}></i>
-                <span>{profile.role === 'admin' ? 'Administrador' : 'Usuario'}</span>
+              <div className={`role-badge ${profile.role === 'admin' ? 'admin' : profile.role === 'soporte' ? 'soporte' : profile.role === 'developer' ? 'developer' : 'user'}`}>
+                <span className="role-emoji">
+                  {profile.role === 'admin' ? '🛡️' : profile.role === 'soporte' ? '🎧' : profile.role === 'developer' ? '💻' : '👤'}
+                </span>
+                <span>{profile.role === 'admin' ? 'Administrador' : profile.role === 'soporte' ? 'Soporte' : profile.role === 'developer' ? 'Developer' : 'Usuario'}</span>
               </div>
               <p className="profile-date">
                 <i className="fa fa-calendar"></i>

@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { ThemeSelector } from '../components/ThemeSelector';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUsers, faHome, faCalendar, faStar } from '@fortawesome/free-solid-svg-icons';
+import { faUsers, faHome, faCalendar, faStar, faShield, faKey } from '@fortawesome/free-solid-svg-icons';
 import './admin.css';
 import './admin-dashboard.css';
 
@@ -127,6 +127,18 @@ export const AdminDashboard: React.FC = () => {
             >
               <FontAwesomeIcon icon={faUsers} />
               <span>Gestión de Usuarios</span>
+            </button>
+
+            <button
+              className="action-btn"
+              onClick={() => navigate('/admin/users')}
+              style={{
+                background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+              }}
+              title="Asignar y gestionar rangos de usuarios"
+            >
+              <FontAwesomeIcon icon={faShield} />
+              <span>Gestión de Rangos</span>
             </button>
 
             <button

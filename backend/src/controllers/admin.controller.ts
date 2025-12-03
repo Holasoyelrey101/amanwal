@@ -75,10 +75,11 @@ export const getAllUsers = async (req: AuthRequest, res: Response): Promise<void
 
 export const updateUserRole = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { userId, role } = req.body;
+    const { userId } = req.params;
+    const { role } = req.body;
 
-    if (!userId || !['user', 'admin'].includes(role)) {
-      res.status(400).json({ error: 'userId y role (user/admin) son requeridos' });
+    if (!userId || !['user', 'admin', 'soporte', 'developer'].includes(role)) {
+      res.status(400).json({ error: 'userId y role (user/admin/soporte/developer) son requeridos' });
       return;
     }
 

@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import { PrismaClient } from '@prisma/client';
 import authRoutes from './routes/auth.routes';
 import cabinRoutes from './routes/cabin.routes';
 import bookingRoutes from './routes/booking.routes';
@@ -8,8 +9,11 @@ import reviewRoutes from './routes/review.routes';
 import adminRoutes from './routes/admin.routes';
 import setupRoutes from './routes/setup.routes';
 import paymentRoutes from './routes/payment.routes';
+import supportRoutes from './routes/support.routes';
 
 dotenv.config();
+
+export const prisma = new PrismaClient();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -27,6 +31,7 @@ app.use('/api/reviews', reviewRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/setup', setupRoutes);
 app.use('/api/payments', paymentRoutes);
+app.use('/api/support', supportRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

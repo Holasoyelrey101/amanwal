@@ -27,6 +27,9 @@ model User {
   cabins          Cabin[]
   bookings        Booking[]
   reviews         Review[]
+  tickets         Ticket[]
+  messages        Message[]
+  assignedTickets Ticket[]   @relation("AssignedTickets")
 }
 
 model Cabin {
@@ -77,6 +80,34 @@ model Review {
   userId  String
   rating  Int
   comment String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Ticket {
+  id          String    @id @default(cuid())
+  ticketNumber String   @unique
+  title       String
+  description String
+  priority    String    @default("normal")
+  status      String    @default("open")
+  category    String    @default("general")
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String
+  assignedTo  User?     @relation("AssignedTickets", fields: [assignedToId], references: [id], onDelete: SetNull)
+  assignedToId String?
+  messages    Message[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Message {
+  id        String   @id @default(cuid())
+  content   String
+  ticket    Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  ticketId  String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
