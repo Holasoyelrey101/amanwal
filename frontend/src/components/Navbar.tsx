@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
 import apiClient from '../api/client';
+import { AmanwalLogo } from './AmanwalLogo';
 import './navbar.css';
 
 interface Ticket {
@@ -78,8 +79,11 @@ export const Navbar: React.FC = () => {
       <div className="navbar-content">
         {/* Logo */}
         <Link to="/" className="navbar-logo">
-          <span className="logo-icon">🏠</span>
-          <span className="logo-text">Amanwal</span>
+          <AmanwalLogo size="medium" />
+          <span className="logo-text">
+            <span className="logo-first-letter">A</span>
+            <span className="logo-remaining-text">manwal</span>
+          </span>
         </Link>
 
         {/* Navigation Links */}
@@ -147,7 +151,7 @@ export const Navbar: React.FC = () => {
                         className="dropdown-item support-item"
                         onClick={() => setShowDropdown(false)}
                       >
-                        <i className="fa fa-headset"></i>
+                        <span className="dropdown-emoji">💬</span>
                         <span>Panel de Soporte</span>
                       </Link>
                       <div className="dropdown-divider"></div>

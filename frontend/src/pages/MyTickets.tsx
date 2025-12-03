@@ -180,7 +180,7 @@ export const MyTickets: React.FC = () => {
     const statusEmojis: Record<string, string> = {
       'open': '🟢 Abierto',
       'in-progress': '🔵 En progreso',
-      'closed': '⚫ Cerrado',
+      'closed': '🔴 Cerrado',
       'resolved': '✅ Resuelto'
     };
     return statusEmojis[status] || status;
@@ -190,7 +190,7 @@ export const MyTickets: React.FC = () => {
     const colors: Record<string, string> = {
       'open': 'rgba(74, 222, 128, 0.2)',
       'in-progress': 'rgba(96, 165, 250, 0.2)',
-      'closed': 'rgba(209, 213, 219, 0.2)',
+      'closed': 'rgba(239, 68, 68, 0.2)',
       'resolved': 'rgba(34, 197, 94, 0.2)'
     };
     return colors[status] || 'rgba(96, 165, 250, 0.2)';

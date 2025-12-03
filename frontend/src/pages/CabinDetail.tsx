@@ -42,6 +42,10 @@ export const CabinDetail: React.FC = () => {
   const [numberOfGuests, setNumberOfGuests] = useState<string>('');
   const [validationError, setValidationError] = useState<string>('');
   const [showBookingCalendar, setShowBookingCalendar] = useState(false);
+  const [showReviewForm, setShowReviewForm] = useState(false);
+  const [reviewRating, setReviewRating] = useState(0);
+  const [reviewComment, setReviewComment] = useState('');
+  const [submittingReview, setSubmittingReview] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -119,6 +123,41 @@ export const CabinDetail: React.FC = () => {
   };
 
   const totalInfo = calculateTotal();
+
+  const handleSubmitReview = async () => {
+    if (reviewRating === 0) {
+      alert('Por favor selecciona una calificación');
+      return;
+    }
+    if (reviewComment.trim() === '') {
+      alert('Por favor escribe un comentario');
+      return;
+    }
+
+    try {
+      setSubmittingReview(true);
+      await reviewAPI.create({
+        cabinId: id,
+        rating: reviewRating,
+        comment: reviewComment
+      });
+
+      // Recargar las reseñas
+      const reviewsResponse = await reviewAPI.getCabinReviews(id!);
+      setReviews(reviewsResponse.data);
+
+      // Limpiar el formulario
+      setReviewRating(0);
+      setReviewComment('');
+      setShowReviewForm(false);
+      alert('¡Reseña enviada correctamente!');
+    } catch (error) {
+      console.error('Error al enviar reseña:', error);
+      alert('Error al enviar la reseña');
+    } finally {
+      setSubmittingReview(false);
+    }
+  };
 
   return (
     <div className="cabin-detail-container">
@@ -357,6 +396,76 @@ export const CabinDetail: React.FC = () => {
             {activeTab === 'resenas' && (
               <div className="tab-pane-content">
                 <h2>Reseñas de huéspedes</h2>
+
+                {/* Botón para mostrar formulario */}
+                {!showReviewForm && (
+                  <button
+                    className="btn-add-review"
+                    onClick={() => setShowReviewForm(true)}
+                  >
+                    <i className="fa fa-pencil"></i> Dejar una reseña
+                  </button>
+                )}
+
+                {/* Formulario para crear reseña */}
+                {showReviewForm && (
+                  <div className="review-form-container">
+                    <h3>Comparte tu experiencia</h3>
+                    <div className="review-form">
+                      <div className="form-group">
+                        <label>Tu calificación</label>
+                        <div className="star-rating-input">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <button
+                              key={star}
+                              className={`star-btn ${star <= reviewRating ? 'active' : ''}`}
+                              onClick={() => setReviewRating(star)}
+                              type="button"
+                            >
+                              <i className="fa fa-star"></i>
+                            </button>
+                          ))}
+                        </div>
+                        {reviewRating > 0 && (
+                          <span className="rating-text">{reviewRating} de 5 estrellas</span>
+                        )}
+                      </div>
+
+                      <div className="form-group">
+                        <label>Tu comentario</label>
+                        <textarea
+                          className="review-textarea"
+                          placeholder="Cuéntanos sobre tu experiencia en la cabaña..."
+                          value={reviewComment}
+                          onChange={(e) => setReviewComment(e.target.value)}
+                          rows={4}
+                        />
+                      </div>
+
+                      <div className="form-actions">
+                        <button
+                          className="btn-submit-review"
+                          onClick={handleSubmitReview}
+                          disabled={submittingReview}
+                        >
+                          {submittingReview ? '⏳ Enviando...' : '✓ Enviar reseña'}
+                        </button>
+                        <button
+                          className="btn-cancel-review"
+                          onClick={() => {
+                            setShowReviewForm(false);
+                            setReviewRating(0);
+                            setReviewComment('');
+                          }}
+                        >
+                          ✕ Cancelar
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Lista de reseñas */}
                 {reviews.length > 0 ? (
                   <div className="reviews-list">
                     {reviews.map((review) => (
@@ -384,10 +493,12 @@ export const CabinDetail: React.FC = () => {
                     ))}
                   </div>
                 ) : (
-                  <div className="no-reviews">
-                    <i className="fa fa-star-o"></i>
-                    <p>Aún no hay reseñas. ¡Sé el primero en dejar una!</p>
-                  </div>
+                  !showReviewForm && (
+                    <div className="no-reviews">
+                      <i className="fa fa-star-o"></i>
+                      <p>Aún no hay reseñas. ¡Sé el primero en dejar una!</p>
+                    </div>
+                  )
                 )}
               </div>
             )}
