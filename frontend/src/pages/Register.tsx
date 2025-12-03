@@ -2,16 +2,17 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authAPI } from '../api';
 import { useAuth } from '../context/AuthContext';
+import './auth.css';
 
 export const Register: React.FC = () => {
   const [formData, setFormData] = useState({
     email: '',
     name: '',
+    birthDate: '',
     password: '',
     confirmPassword: '',
   });
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
   const [requiresVerification, setRequiresVerification] = useState(false);
   const [verificationEmail, setVerificationEmail] = useState('');
@@ -26,10 +27,25 @@ export const Register: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    setSuccess('');
 
     if (formData.password !== formData.confirmPassword) {
       setError('Las contraseñas no coinciden');
+      return;
+    }
+
+    if (formData.password.length < 6) {
+      setError('La contraseña debe tener al menos 6 caracteres');
+      return;
+    }
+
+    // Validar edad mínima (18 años)
+    const birthDate = new Date(formData.birthDate);
+    const today = new Date();
+    const age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    
+    if (age < 18 || (age === 18 && monthDiff < 0)) {
+      setError('Debes tener al menos 18 años para registrarte');
       return;
     }
 
@@ -38,15 +54,15 @@ export const Register: React.FC = () => {
       const response = await authAPI.register(
         formData.email,
         formData.name,
-        formData.password
+        formData.password,
+        formData.birthDate
       );
 
       // Si requiresVerification es true, mostrar el mensaje de verificación
       if (response.data.requiresVerification) {
         setRequiresVerification(true);
         setVerificationEmail(formData.email);
-        setSuccess(`✓ Cuenta creada! Hemos enviado un enlace de verificación a ${formData.email}`);
-        setFormData({ email: '', name: '', password: '', confirmPassword: '' });
+        setFormData({ email: '', name: '', birthDate: '', password: '', confirmPassword: '' });
       } else {
         // Si no, login automático (caso antiguo)
         login(response.data.user, response.data.token);
@@ -61,42 +77,59 @@ export const Register: React.FC = () => {
 
   if (requiresVerification) {
     return (
-      <div className="container py-5">
-        <div className="row justify-content-center">
-          <div className="col-md-6">
-            <div className="card shadow border-success">
-              <div className="card-body p-5 text-center">
-                <div className="mb-4" style={{ fontSize: '60px' }}>✓</div>
-                <h2 className="card-title text-success mb-3">¡Bienvenido!</h2>
-                <p className="text-muted mb-4">
-                  Tu cuenta ha sido creada exitosamente. Hemos enviado un enlace de verificación a:
-                </p>
-                <p className="fw-bold text-dark mb-4">{verificationEmail}</p>
-                <p className="text-muted mb-4">
-                  Por favor verifica tu email haciendo clic en el enlace. El enlace expira en 24 horas.
-                </p>
-                
-                <div className="alert alert-info" role="alert">
-                  <strong>📧 Revisa tu bandeja de entrada</strong>
-                  <p className="mt-2 mb-0">Si no ves el email, revisa tu carpeta de spam</p>
-                </div>
-
-                <div className="mt-4">
-                  <p className="text-muted mb-3">¿No recibiste el email?</p>
-                  <button
-                    className="btn btn-outline-primary"
-                    onClick={() => navigate('/auth/resend')}
-                  >
-                    Reenviar Email
-                  </button>
-                </div>
-
-                <hr className="my-4" />
-
-                <p className="text-muted small">
-                  Una vez verifiques tu email, podrás iniciar sesión con tu cuenta.
-                </p>
+      <div className="auth-container">
+        <div className="auth-background"></div>
+        <div className="auth-wrapper">
+          <div className="auth-card verification-card">
+            <div className="verification-icon">
+              <i className="fa fa-envelope"></i>
+            </div>
+            <h2>Verifica tu Email</h2>
+            <p>Te hemos enviado un enlace de verificación a tu correo electrónico.</p>
+            
+            <div className="verification-info">
+              <div className="info-item">
+                <i className="fa fa-envelope"></i>
+                <span>Email: <strong>{verificationEmail}</strong></span>
               </div>
+              <div className="info-item">
+                <i className="fa fa-click"></i>
+                <span>Haz clic en el enlace en el correo para verificar tu cuenta</span>
+              </div>
+              <div className="info-item">
+                <i className="fa fa-clock"></i>
+                <span>El enlace expira en 24 horas</span>
+              </div>
+            </div>
+
+            <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.7)', marginBottom: '20px', fontWeight: '500' }}>
+              Una vez verificado, podrás iniciar sesión en tu cuenta
+            </p>
+
+            <div className="action-buttons">
+              <button
+                className="auth-btn primary"
+                onClick={() => navigate('/login')}
+              >
+                <i className="fa fa-sign-in"></i>
+                Ir a Iniciar Sesión
+              </button>
+              <button
+                className="auth-btn secondary"
+                onClick={() => {
+                  setRequiresVerification(false);
+                  setFormData({
+                    email: '',
+                    name: '',
+                    birthDate: '',
+                    password: '',
+                    confirmPassword: '',
+                  });
+                }}
+              >
+                <i className="fa fa-arrow-left"></i>
+                Volver
+              </button>
             </div>
           </div>
         </div>
@@ -105,87 +138,143 @@ export const Register: React.FC = () => {
   }
 
   return (
-    <div className="container py-5">
-      <div className="row justify-content-center">
-        <div className="col-md-6">
-          <div className="card shadow">
-            <div className="card-body p-5">
-              <h2 className="card-title text-center mb-4">Crear Cuenta</h2>
-              {error && <div className="alert alert-danger">{error}</div>}
-              {success && <div className="alert alert-success">{success}</div>}
-              <form onSubmit={handleSubmit}>
-                <div className="mb-3">
-                  <label htmlFor="name" className="form-label">
-                    Nombre Completo
-                  </label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    id="name"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-                <div className="mb-3">
-                  <label htmlFor="email" className="form-label">
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    className="form-control"
-                    id="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-                <div className="mb-3">
-                  <label htmlFor="password" className="form-label">
-                    Contraseña
-                  </label>
-                  <input
-                    type="password"
-                    className="form-control"
-                    id="password"
-                    name="password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-                <div className="mb-3">
-                  <label htmlFor="confirmPassword" className="form-label">
-                    Confirmar Contraseña
-                  </label>
-                  <input
-                    type="password"
-                    className="form-control"
-                    id="confirmPassword"
-                    name="confirmPassword"
-                    value={formData.confirmPassword}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-                <button
-                  type="submit"
-                  className="btn btn-primary w-100"
-                  disabled={loading}
-                >
-                  {loading ? 'Registrando...' : 'Registrarse'}
-                </button>
-              </form>
-              <p className="text-center mt-3">
-                ¿Ya tienes cuenta?{' '}
-                <a href="/login" className="text-decoration-none">
-                  Inicia sesión aquí
-                </a>
-              </p>
-            </div>
+    <div className="auth-container">
+      <div className="auth-background"></div>
+      <div className="auth-wrapper">
+        <div className="auth-card">
+          <div className="auth-header">
+            <h1>Crear Cuenta</h1>
+            <p>Únete a Amanwal hoy</p>
           </div>
+
+          {error && (
+            <div className="auth-alert error">
+              <i className="fa fa-exclamation-circle"></i>
+              <span>{error}</span>
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="auth-form">
+            <div className="form-group">
+              <label htmlFor="name">
+                <i className="fa fa-user"></i>
+                Nombre Completo
+              </label>
+              <input
+                type="text"
+                className="auth-input"
+                id="name"
+                name="name"
+                placeholder="Juan Pérez"
+                value={formData.name}
+                onChange={handleChange}
+                required
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="email">
+                <i className="fa fa-envelope"></i>
+                Email
+              </label>
+              <input
+                type="email"
+                className="auth-input"
+                id="email"
+                name="email"
+                placeholder="tu@email.com"
+                value={formData.email}
+                onChange={handleChange}
+                required
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="birthDate">
+                <i className="fa fa-calendar"></i>
+                Fecha de Nacimiento
+              </label>
+              <input
+                type="date"
+                className="auth-input"
+                id="birthDate"
+                name="birthDate"
+                value={formData.birthDate}
+                onChange={handleChange}
+                required
+              />
+              <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.7)', marginTop: '4px', fontWeight: '500' }}>
+                Debes ser mayor de 18 años
+              </span>
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="password">
+                <i className="fa fa-lock"></i>
+                Contraseña
+              </label>
+              <input
+                type="password"
+                className="auth-input"
+                id="password"
+                name="password"
+                placeholder="••••••••"
+                value={formData.password}
+                onChange={handleChange}
+                required
+              />
+              <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.7)', marginTop: '4px', fontWeight: '500' }}>
+                Mínimo 6 caracteres
+              </span>
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="confirmPassword">
+                <i className="fa fa-lock"></i>
+                Confirmar Contraseña
+              </label>
+              <input
+                type="password"
+                className="auth-input"
+                id="confirmPassword"
+                name="confirmPassword"
+                placeholder="••••••••"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                required
+              />
+            </div>
+
+            <button
+              type="submit"
+              className="auth-btn primary full"
+              disabled={loading}
+            >
+              {loading ? (
+                <>
+                  <i className="fa fa-spinner fa-spin"></i>
+                  Creando cuenta...
+                </>
+              ) : (
+                <>
+                  <i className="fa fa-user-plus"></i>
+                  Crear Cuenta
+                </>
+              )}
+            </button>
+          </form>
+
+          <div className="auth-divider">
+            <span>¿Ya tienes cuenta?</span>
+          </div>
+
+          <button
+            className="auth-btn secondary full"
+            onClick={() => navigate('/login')}
+          >
+            <i className="fa fa-sign-in"></i>
+            Iniciar Sesión
+          </button>
         </div>
       </div>
     </div>

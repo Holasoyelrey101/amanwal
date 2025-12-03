@@ -116,6 +116,12 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ cabinId, price
   const nights = checkInDate && checkOutDate ? Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24)) : 0;
   const totalPrice = nights * price;
 
+  // Validar si el mes anterior es válido (no puede ser menor al mes actual)
+  const canGoToPreviousMonth = () => {
+    const today = new Date();
+    return currentDate.getMonth() > today.getMonth() || currentDate.getFullYear() > today.getFullYear();
+  };
+
   return (
     <div className="booking-calendar-overlay" onClick={onClose}>
       <div className="booking-calendar-modal" onClick={(e) => e.stopPropagation()}>
@@ -125,6 +131,8 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ cabinId, price
           <button 
             className="month-nav-btn"
             onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1))}
+            disabled={!canGoToPreviousMonth()}
+            title={!canGoToPreviousMonth() ? 'No puedes retroceder al mes anterior' : 'Mes anterior'}
           >
             ←
           </button>

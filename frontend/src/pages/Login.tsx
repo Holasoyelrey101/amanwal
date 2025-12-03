@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authAPI } from '../api';
 import { useAuth } from '../context/AuthContext';
+import './auth.css';
 
 export const Login: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -31,7 +32,6 @@ export const Login: React.FC = () => {
       login(response.data.user, response.data.token);
       navigate('/');
     } catch (err: any) {
-      // Si el error es 403 y requiresVerification está en true, mostrar opción de reenviar
       if (err.response?.status === 403 && err.response?.data?.requiresVerification) {
         setRequiresVerification(true);
         setUnverifiedEmail(formData.email);
@@ -46,47 +46,49 @@ export const Login: React.FC = () => {
 
   if (requiresVerification) {
     return (
-      <div className="container py-5">
-        <div className="row justify-content-center">
-          <div className="col-md-6">
-            <div className="card shadow border-warning">
-              <div className="card-body p-5">
-                <div className="mb-4" style={{ fontSize: '50px', textAlign: 'center' }}>📧</div>
-                <h2 className="card-title text-center text-warning mb-3">Email No Verificado</h2>
-                <p className="text-muted mb-4">
-                  Antes de iniciar sesión, necesitas verificar tu correo electrónico.
-                </p>
-                
-                <div className="alert alert-info" role="alert">
-                  <strong>¿Qué hacer?</strong>
-                  <ul className="mb-0 mt-2">
-                    <li>Revisa tu correo electrónico: <strong>{unverifiedEmail}</strong></li>
-                    <li>Busca un email de Amanwal con un enlace de verificación</li>
-                    <li>Haz clic en el enlace para verificar tu cuenta</li>
-                  </ul>
-                </div>
-
-                <p className="text-muted mb-3">¿No recibes el email?</p>
-                
-                <button
-                  className="btn btn-primary w-100"
-                  onClick={() => navigate('/auth/resend')}
-                >
-                  Reenviar Email de Verificación
-                </button>
-
-                <hr className="my-4" />
-
-                <button
-                  className="btn btn-outline-secondary w-100"
-                  onClick={() => {
-                    setRequiresVerification(false);
-                    setFormData({ email: '', password: '' });
-                  }}
-                >
-                  Intentar Nuevamente con Otro Email
-                </button>
+      <div className="auth-container">
+        <div className="auth-background"></div>
+        <div className="auth-wrapper">
+          <div className="auth-card verification-card">
+            <div className="verification-icon">
+              <i className="fa fa-envelope"></i>
+            </div>
+            <h2>Email No Verificado</h2>
+            <p>Antes de iniciar sesión, necesitas verificar tu correo electrónico.</p>
+            
+            <div className="verification-info">
+              <div className="info-item">
+                <i className="fa fa-check"></i>
+                <span>Revisa tu correo: <strong>{unverifiedEmail}</strong></span>
               </div>
+              <div className="info-item">
+                <i className="fa fa-link"></i>
+                <span>Busca el enlace de verificación de Amanwal</span>
+              </div>
+              <div className="info-item">
+                <i className="fa fa-click"></i>
+                <span>Haz clic para verificar tu cuenta</span>
+              </div>
+            </div>
+
+            <div className="action-buttons">
+              <button
+                className="auth-btn primary"
+                onClick={() => navigate('/auth/resend')}
+              >
+                <i className="fa fa-envelope-open"></i>
+                Reenviar Email
+              </button>
+              <button
+                className="auth-btn secondary"
+                onClick={() => {
+                  setRequiresVerification(false);
+                  setFormData({ email: '', password: '' });
+                }}
+              >
+                <i className="fa fa-arrow-left"></i>
+                Volver
+              </button>
             </div>
           </div>
         </div>
@@ -95,58 +97,87 @@ export const Login: React.FC = () => {
   }
 
   return (
-    <div className="container py-5">
-      <div className="row justify-content-center">
-        <div className="col-md-6">
-          <div className="card shadow">
-            <div className="card-body p-5">
-              <h2 className="card-title text-center mb-4">Iniciar Sesión</h2>
-              {error && <div className="alert alert-danger">{error}</div>}
-              <form onSubmit={handleSubmit}>
-                <div className="mb-3">
-                  <label htmlFor="email" className="form-label">
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    className="form-control"
-                    id="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-                <div className="mb-3">
-                  <label htmlFor="password" className="form-label">
-                    Contraseña
-                  </label>
-                  <input
-                    type="password"
-                    className="form-control"
-                    id="password"
-                    name="password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-                <button
-                  type="submit"
-                  className="btn btn-primary w-100"
-                  disabled={loading}
-                >
-                  {loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
-                </button>
-              </form>
-              <p className="text-center mt-3">
-                ¿No tienes cuenta?{' '}
-                <a href="/register" className="text-decoration-none">
-                  Regístrate aquí
-                </a>
-              </p>
-            </div>
+    <div className="auth-container">
+      <div className="auth-background"></div>
+      <div className="auth-wrapper">
+        <div className="auth-card">
+          <div className="auth-header">
+            <h1>Iniciar Sesión</h1>
+            <p>Bienvenido de vuelta a Amanwal</p>
           </div>
+
+          {error && (
+            <div className="auth-alert error">
+              <i className="fa fa-exclamation-circle"></i>
+              <span>{error}</span>
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="auth-form">
+            <div className="form-group">
+              <label htmlFor="email">
+                <i className="fa fa-envelope"></i>
+                Email
+              </label>
+              <input
+                type="email"
+                className="auth-input"
+                id="email"
+                name="email"
+                placeholder="tu@email.com"
+                value={formData.email}
+                onChange={handleChange}
+                required
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="password">
+                <i className="fa fa-lock"></i>
+                Contraseña
+              </label>
+              <input
+                type="password"
+                className="auth-input"
+                id="password"
+                name="password"
+                placeholder="••••••••"
+                value={formData.password}
+                onChange={handleChange}
+                required
+              />
+            </div>
+
+            <button
+              type="submit"
+              className="auth-btn primary full"
+              disabled={loading}
+            >
+              {loading ? (
+                <>
+                  <i className="fa fa-spinner fa-spin"></i>
+                  Iniciando sesión...
+                </>
+              ) : (
+                <>
+                  <i className="fa fa-sign-in"></i>
+                  Iniciar Sesión
+                </>
+              )}
+            </button>
+          </form>
+
+          <div className="auth-divider">
+            <span>¿No tienes cuenta?</span>
+          </div>
+
+          <button
+            className="auth-btn secondary full"
+            onClick={() => navigate('/register')}
+          >
+            <i className="fa fa-user-plus"></i>
+            Crear Nueva Cuenta
+          </button>
         </div>
       </div>
     </div>

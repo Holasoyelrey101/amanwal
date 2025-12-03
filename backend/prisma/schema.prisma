@@ -16,6 +16,7 @@ model User {
   name            String
   password        String
   phone           String?
+  birthDate       DateTime?
   avatar          String?
   role            String     @default("user")
   isEmailVerified Boolean    @default(false)

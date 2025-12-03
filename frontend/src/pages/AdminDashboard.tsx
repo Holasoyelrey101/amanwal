@@ -3,7 +3,10 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { ThemeSelector } from '../components/ThemeSelector';
-import '../styles/admin-themes.css';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faUsers, faHome, faCalendar, faStar } from '@fortawesome/free-solid-svg-icons';
+import './admin.css';
+import './admin-dashboard.css';
 
 interface DashboardStats {
   totalUsers: number;
@@ -41,121 +44,142 @@ export const AdminDashboard: React.FC = () => {
     }
   };
 
-  if (loading) return <div className="text-center py-5">Cargando panel de administración...</div>;
+  if (loading) return (
+    <div className="admin-container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div className="loading-spinner"></div>
+    </div>
+  );
 
-  if (!stats) return <div className="text-center py-5">Error al cargar las estadísticas</div>;
+  if (!stats) return (
+    <div className="admin-container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div className="empty-state">
+        <div className="empty-state-icon">⚠️</div>
+        <h3>Error al cargar estadísticas</h3>
+        <p>No se pudieron obtener los datos. Intenta más tarde.</p>
+      </div>
+    </div>
+  );
 
   return (
-    <div className="admin-container">
+    <div className="admin-dashboard-container">
       <ThemeSelector />
-      <div className="admin-header">
-        <h1>Panel de Administración</h1>
-        <p className="text-muted">Bienvenido al panel administrativo de Amanwal</p>
-      </div>
+      
+      <div className="admin-dashboard-content">
+        <div className="admin-dashboard-header">
+          <div>
+            <h1><FontAwesomeIcon icon={faUsers} style={{ marginRight: '12px' }} />Panel de Administración</h1>
+            <p>Bienvenido al panel administrativo de Amanwal</p>
+          </div>
+          <button className="admin-btn primary" onClick={() => navigate('/admin/users')}>
+            <FontAwesomeIcon icon={faUsers} /> Usuarios
+          </button>
+        </div>
 
-      {/* Stats Cards */}
-      <div className="stats-grid">
-        <div className="stat-card">
-          <div className="stat-icon users-icon">👥</div>
-          <div className="stat-content">
-            <h3>{stats.totalUsers}</h3>
-            <p>Usuarios Totales</p>
+        {/* Stats Cards */}
+        <div className="admin-dashboard-stats">
+          <div className="stat-card" style={{ animationDelay: '0s' }}>
+            <div className="stat-icon"><FontAwesomeIcon icon={faUsers} /></div>
+            <div className="stat-content">
+              <h3>{stats.totalUsers}</h3>
+              <p>Usuarios Totales</p>
+              <small>Registrados en el sistema</small>
+            </div>
+          </div>
+
+          <div className="stat-card" style={{ animationDelay: '0.1s' }}>
+            <div className="stat-icon"><FontAwesomeIcon icon={faHome} /></div>
+            <div className="stat-content">
+              <h3>{stats.totalCabins}</h3>
+              <p>Cabañas</p>
+              <small>Disponibles en el sistema</small>
+            </div>
+          </div>
+
+          <div className="stat-card" style={{ animationDelay: '0.2s' }}>
+            <div className="stat-icon"><FontAwesomeIcon icon={faCalendar} /></div>
+            <div className="stat-content">
+              <h3>{stats.totalBookings}</h3>
+              <p>Reservas</p>
+              <small>Total de reservas</small>
+            </div>
+          </div>
+
+          <div className="stat-card" style={{ animationDelay: '0.3s' }}>
+            <div className="stat-icon"><FontAwesomeIcon icon={faStar} /></div>
+            <div className="stat-content">
+              <h3>{stats.totalReviews}</h3>
+              <p>Reseñas</p>
+              <small>Calificaciones totales</small>
+            </div>
+          </div>
+        </div>
+
+        {/* Quick Actions */}
+        <div className="admin-dashboard-panel">
+          <h2>⚡ Acciones Rápidas</h2>
+          <div className="admin-dashboard-actions">
             <button
-              className="btn btn-sm btn-primary mt-2"
+              className="action-btn"
               onClick={() => navigate('/admin/users')}
+              style={{
+                background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+              }}
             >
-              Ver Usuarios →
+              <FontAwesomeIcon icon={faUsers} />
+              <span>Gestión de Usuarios</span>
             </button>
-          </div>
-        </div>
 
-        <div className="stat-card">
-          <div className="stat-icon cabins-icon">🏠</div>
-          <div className="stat-content">
-            <h3>{stats.totalCabins}</h3>
-            <p>Cabañas Registradas</p>
             <button
-              className="btn btn-sm btn-primary mt-2"
+              className="action-btn"
               onClick={() => navigate('/admin/cabins')}
+              style={{
+                background: 'linear-gradient(135deg, #d97706 0%, #b45309 100%)',
+              }}
             >
-              Ver Cabañas →
+              <FontAwesomeIcon icon={faHome} />
+              <span>Gestión de Cabañas</span>
             </button>
-          </div>
-        </div>
 
-        <div className="stat-card">
-          <div className="stat-icon bookings-icon">📅</div>
-          <div className="stat-content">
-            <h3>{stats.totalBookings}</h3>
-            <p>Reservas Totales</p>
             <button
-              className="btn btn-sm btn-primary mt-2"
+              className="action-btn"
               onClick={() => navigate('/admin/bookings')}
+              style={{
+                background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
+              }}
             >
-              Ver Reservas →
+              <FontAwesomeIcon icon={faCalendar} />
+              <span>Gestión de Reservas</span>
             </button>
           </div>
         </div>
 
-        <div className="stat-card">
-          <div className="stat-icon reviews-icon">⭐</div>
-          <div className="stat-content">
-            <h3>{stats.totalReviews}</h3>
-            <p>Reseñas Totales</p>
-            <button className="btn btn-sm btn-secondary mt-2" disabled>
-              Próximamente
-            </button>
+        {/* Info Section */}
+        <div className="admin-dashboard-panel">
+          <h2>Información del Sistema</h2>
+          <div className="admin-dashboard-info">
+            <div className="info-box">
+              <strong style={{ color: '#3b82f6' }}>📊 Actividad Reciente</strong>
+              <p>
+                Nuevas reservas (últimos 7 días): <strong>{stats.recentBookings}</strong>
+              </p>
+            </div>
+
+            <div className="info-box">
+              <strong style={{ color: '#3b82f6' }}>🌐 URLs del Sistema</strong>
+              <ul>
+                <li>Frontend: <code>http://localhost:5173</code></li>
+                <li>API: <code>http://localhost:3000/api</code></li>
+              </ul>
+            </div>
+
+            <div className="info-box">
+              <strong style={{ color: '#22c55e' }}>✅ Estado del Sistema</strong>
+              <p>
+                Todos los servicios están <strong style={{ color: '#22c55e' }}>operativos</strong>
+              </p>
+            </div>
           </div>
         </div>
-      </div>
-
-      {/* Quick Actions */}
-      <div className="quick-actions-section">
-        <h2>Acciones Rápidas</h2>
-        <div className="actions-grid">
-          <button
-            className="action-card"
-            onClick={() => navigate('/admin/users')}
-          >
-            <span className="action-icon">👥</span>
-            <h4>Gestión de Usuarios</h4>
-            <p>Ver y administrar usuarios del sistema</p>
-          </button>
-
-          <button
-            className="action-card"
-            onClick={() => navigate('/admin/cabins')}
-          >
-            <span className="action-icon">🏠</span>
-            <h4>Gestión de Cabañas</h4>
-            <p>Agregar, editar y eliminar cabañas</p>
-          </button>
-
-          <button
-            className="action-card"
-            onClick={() => navigate('/admin/bookings')}
-          >
-            <span className="action-icon">📅</span>
-            <h4>Gestión de Reservas</h4>
-            <p>Ver y administrar las reservas</p>
-          </button>
-        </div>
-      </div>
-
-      {/* Info Section */}
-      <div className="admin-info-section">
-        <h3>Información del Sistema</h3>
-        <ul>
-          <li>
-            <strong>Nuevas Reservas (últimos 7 días):</strong> {stats.recentBookings}
-          </li>
-          <li>
-            <strong>URL del sitio:</strong> <code>http://localhost:5173</code>
-          </li>
-          <li>
-            <strong>API Backend:</strong> <code>http://localhost:3000/api</code>
-          </li>
-        </ul>
       </div>
     </div>
   );

@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faHome, faMapPin, faDollarSign, faUsers, faBed, faBath, faStar, faImage } from '@fortawesome/free-solid-svg-icons';
 import './add-cabin-modal.css';
 
 interface EditCabinModalProps {
@@ -159,100 +161,108 @@ export const EditCabinModal: React.FC<EditCabinModalProps> = ({
   if (!isOpen || !cabin) return null;
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-header">
-          <h2>✏️ Editar Cabaña</h2>
-          <button className="btn-close" onClick={onClose}>✕</button>
+    <div className="admin-list-modal-overlay" onClick={onClose}>
+      <div className="admin-list-modal-content" onClick={(e) => e.stopPropagation()}>
+        <div className="admin-list-modal-header">
+          <h2 className="admin-list-modal-title">🏠 Editar Cabaña</h2>
+          <button className="admin-list-modal-close" onClick={onClose}>×</button>
         </div>
 
-        <form onSubmit={handleSubmit} className="modal-form">
+        <form onSubmit={handleSubmit} className="admin-form">
           {/* Información Básica */}
-          <div className="form-section">
-            <h3>Información Básica</h3>
-            <div className="form-row col-md-2">
-              <div className="form-group">
-                <label htmlFor="title">Título</label>
+          <div className="admin-form-section">
+            <h3 className="admin-form-section-title">Información Básica</h3>
+            <div className="admin-form-row col-md-1">
+              <div className="admin-form-group">
+                <label><FontAwesomeIcon icon={faHome} /> Título</label>
                 <input
                   type="text"
-                  id="title"
                   name="title"
                   value={formData.title}
                   onChange={handleChange}
-                  required
-                />
-              </div>
-              <div className="form-group">
-                <label htmlFor="location">Ubicación</label>
-                <input
-                  type="text"
-                  id="location"
-                  name="location"
-                  value={formData.location}
-                  onChange={handleChange}
+                  className="admin-form-control"
                   required
                 />
               </div>
             </div>
-            <div className="form-row col-md-1">
-              <div className="form-group">
-                <label htmlFor="description">Descripción</label>
+            <div className="admin-form-row col-md-1">
+              <div className="admin-form-group">
+                <label><FontAwesomeIcon icon={faMapPin} /> Ubicación</label>
+                <input
+                  type="text"
+                  name="location"
+                  value={formData.location}
+                  onChange={handleChange}
+                  className="admin-form-control"
+                  required
+                />
+              </div>
+            </div>
+            <div className="admin-form-row col-md-1">
+              <div className="admin-form-group">
+                <label>📝 Descripción</label>
                 <textarea
-                  id="description"
                   name="description"
                   value={formData.description}
                   onChange={handleChange}
                   rows={4}
+                  className="admin-form-control"
                 />
               </div>
             </div>
           </div>
 
           {/* Detalles y Precios */}
-          <div className="form-section">
-            <h3>Detalles y Precios</h3>
-            <div className="form-row col-md-4">
-              <div className="form-group">
-                <label htmlFor="price">Precio por Noche ($)</label>
+          <div className="admin-form-section">
+            <h3 className="admin-form-section-title">Detalles y Precios</h3>
+            <div className="admin-form-row col-md-1">
+              <div className="admin-form-group">
+                <label><FontAwesomeIcon icon={faDollarSign} /> Precio por Noche</label>
                 <input
                   type="number"
-                  id="price"
                   name="price"
                   value={formData.price}
                   onChange={handleChange}
+                  className="admin-form-control"
                   required
                 />
               </div>
-              <div className="form-group">
-                <label htmlFor="capacity">Capacidad (personas)</label>
+            </div>
+            <div className="admin-form-row col-md-1">
+              <div className="admin-form-group">
+                <label><FontAwesomeIcon icon={faUsers} /> Capacidad (personas)</label>
                 <input
                   type="number"
-                  id="capacity"
                   name="capacity"
                   value={formData.capacity}
                   onChange={handleChange}
+                  className="admin-form-control"
                   required
                 />
               </div>
-              <div className="form-group">
-                <label htmlFor="bedrooms">Dormitorios</label>
+            </div>
+            <div className="admin-form-row col-md-1">
+              <div className="admin-form-group">
+                <label><FontAwesomeIcon icon={faBed} /> Dormitorios</label>
                 <input
                   type="number"
-                  id="bedrooms"
                   name="bedrooms"
                   value={formData.bedrooms}
                   onChange={handleChange}
+                  className="admin-form-control"
                   required
                 />
               </div>
-              <div className="form-group">
-                <label htmlFor="bathrooms">Baños</label>
+            </div>
+            <div className="admin-form-row col-md-1">
+              <div className="admin-form-group">
+                <label><FontAwesomeIcon icon={faBath} /> Baños</label>
                 <input
                   type="number"
-                  id="bathrooms"
                   name="bathrooms"
                   value={formData.bathrooms}
                   onChange={handleChange}
+                  className="admin-form-control"
                   required
                 />
               </div>
@@ -260,24 +270,24 @@ export const EditCabinModal: React.FC<EditCabinModalProps> = ({
           </div>
 
           {/* Comodidades e Imágenes */}
-          <div className="form-section">
-            <h3>Comodidades e Imágenes</h3>
-            <div className="form-row col-md-4">
-              <div className="form-group">
-                <label htmlFor="amenities">Comodidades</label>
+          <div className="admin-form-section">
+            <h3 className="admin-form-section-title">Comodidades e Imágenes</h3>
+            <div className="admin-form-row col-md-1">
+              <div className="admin-form-group">
+                <label><FontAwesomeIcon icon={faStar} /> Comodidades</label>
                 <input
                   type="text"
-                  id="amenities"
                   name="amenities"
                   value={formData.amenities}
                   onChange={handleChange}
+                  className="admin-form-control"
                   placeholder="WiFi, TV, Cocina, etc..."
                 />
               </div>
             </div>
 
-            <div className="form-group">
-              <label>Imágenes</label>
+            <div className="admin-form-group">
+              <label><FontAwesomeIcon icon={faImage} /> Imágenes</label>
               <div className="image-input-group">
                 <input
                   type="url"
@@ -326,11 +336,11 @@ export const EditCabinModal: React.FC<EditCabinModalProps> = ({
           </div>
 
           {/* Botones */}
-          <div className="modal-footer">
-            <button type="button" className="btn btn-secondary" onClick={onClose}>
+          <div className="admin-list-modal-footer">
+            <button type="button" className="admin-btn secondary" onClick={onClose}>
               Cancelar
             </button>
-            <button type="submit" className="btn btn-primary" disabled={loading}>
+            <button type="submit" className="admin-btn primary" disabled={loading}>
               {loading ? 'Actualizando...' : 'Actualizar Cabaña'}
             </button>
           </div>

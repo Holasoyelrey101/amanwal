@@ -14,6 +14,7 @@ interface RegisterBody {
   email: string;
   name: string;
   password: string;
+  birthDate?: string;
 }
 
 interface LoginBody {
@@ -31,7 +32,7 @@ const generateToken = (userId: string, role: string = 'user'): string => {
 
 export const register = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { email, name, password }: RegisterBody = req.body;
+    const { email, name, password, birthDate }: RegisterBody = req.body;
 
     // Validaciones
     if (!email || !name || !password) {
@@ -69,6 +70,7 @@ export const register = async (req: AuthRequest, res: Response): Promise<void> =
         email,
         name,
         password: hashedPassword,
+        ...(birthDate && { birthDate: new Date(birthDate) }),
         verificationToken,
         verificationTokenExpiry,
       },
@@ -186,6 +188,7 @@ export const getProfile = async (req: AuthRequest, res: Response): Promise<void>
         email: true,
         name: true,
         phone: true,
+        birthDate: true,
         avatar: true,
         role: true,
         createdAt: true,

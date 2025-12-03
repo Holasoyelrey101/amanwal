@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { cabinAPI, reviewAPI } from '../api';
 import { BookingCalendar } from '../components/BookingCalendar';
-import './cabin-detail.css';
+import './cabin-detail-new.css';
 
 interface Cabin {
   id: string;
@@ -35,13 +35,13 @@ export const CabinDetail: React.FC = () => {
   const [images, setImages] = useState<string[]>([]);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showLightbox, setShowLightbox] = useState(false);
-  const [showBookingCalendar, setShowBookingCalendar] = useState(false);
   const [activeTab, setActiveTab] = useState('resumen');
   const [showServicesModal, setShowServicesModal] = useState(false);
   const [checkInDate, setCheckInDate] = useState<string>('');
   const [checkOutDate, setCheckOutDate] = useState<string>('');
   const [numberOfGuests, setNumberOfGuests] = useState<string>('');
   const [validationError, setValidationError] = useState<string>('');
+  const [showBookingCalendar, setShowBookingCalendar] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -76,258 +76,374 @@ export const CabinDetail: React.FC = () => {
     fetchData();
   }, [id]);
 
-  if (loading) return <div className="container py-5 text-center">Cargando...</div>;
-  if (!cabin) return <div className="container py-5 alert alert-danger">Cabaña no encontrada</div>;
+  if (loading) {
+    return (
+      <div className="cabin-detail-loading">
+        <div className="spinner"></div>
+        <p>Cargando detalles de la cabaña...</p>
+      </div>
+    );
+  }
+
+  if (!cabin) {
+    return (
+      <div className="cabin-detail-container">
+        <div className="cabin-not-found">
+          <i className="fa fa-exclamation-circle"></i>
+          <h2>Cabaña no encontrada</h2>
+          <p>La cabaña que buscas no existe o ha sido eliminada.</p>
+          <button className="back-button" onClick={() => navigate('/cabins')}>
+            <i className="fa fa-arrow-left"></i> Volver a Cabañas
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   const averageRating = reviews.length > 0
     ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1)
     : 'Sin reseñas';
 
+  // Calcular total de noches y precio total
+  const calculateTotal = () => {
+    if (!checkInDate || !checkOutDate) return null;
+    
+    const checkIn = new Date(checkInDate);
+    const checkOut = new Date(checkOutDate);
+    const nights = Math.ceil((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24));
+    
+    if (nights <= 0) return null;
+    
+    const total = nights * (cabin?.price || 0);
+    return { nights, total };
+  };
+
+  const totalInfo = calculateTotal();
+
   return (
     <div className="cabin-detail-container">
-      {/* Galería de imágenes - FULL WIDTH ARRIBA */}
-      <div className="cabin-gallery-grid">
-        {images.length > 0 && (
-          <>
-            {/* Imagen principal grande */}
-            <div className="gallery-main-large" onClick={() => setShowLightbox(true)}>
-              <img src={images[0]} alt={cabin.title} />
-              <span className="gallery-counter">1/{images.length}</span>
-            </div>
-
-            {/* Miniaturas al lado */}
-            <div className="gallery-thumbnails-vertical">
-              {images.slice(1, 5).map((img, idx) => (
-                <div 
-                  key={idx + 1} 
-                  className="gallery-thumb-item"
-                  onClick={() => setCurrentImageIndex(idx + 1)}
-                >
-                  <img src={img} alt={`Imagen ${idx + 2}`} />
+      {/* ===== HERO GALLERY SECTION ===== */}
+      <div className="cabin-hero-gallery">
+        <div className="gallery-main-container">
+          {images.length > 0 ? (
+            <>
+              <div className="gallery-main" onClick={() => setShowLightbox(true)}>
+                <img src={images[0]} alt={cabin.title} className="main-image" />
+                <div className="gallery-overlay">
+                  <i className="fa fa-expand"></i>
+                  <span>Ampliar galería</span>
                 </div>
-              ))}
-              {images.length > 5 && (
-                <div className="gallery-thumb-item see-all" onClick={() => setShowLightbox(true)}>
-                  <div className="see-all-overlay">
-                    <span>Ver todos ({images.length})</span>
-                  </div>
+                <div className="image-counter">
+                  <i className="fa fa-image"></i> {images.length}
                 </div>
-              )}
-            </div>
-          </>
-        )}
-      </div>
-
-      {/* Tabs DEBAJO DE LA GALERÍA */}
-      <div className="cabin-tabs-wrapper">
-        <div className="cabin-tabs">
-          <button 
-            className={`tab-btn ${activeTab === 'resumen' ? 'active' : ''}`}
-            onClick={() => setActiveTab('resumen')}
-          >
-            Resumen
-          </button>
-          <button 
-            className={`tab-btn ${activeTab === 'politicas' ? 'active' : ''}`}
-            onClick={() => setActiveTab('politicas')}
-          >
-            Políticas
-          </button>
-        </div>
-      </div>
-
-      {/* Contenido principal CON LAYOUT DE DOS COLUMNAS */}
-      <div className="cabin-main-wrapper">
-        {/* Lado izquierdo - Info + Contenido */}
-        <div className="cabin-left-section">
-          {/* Título y características rápidas */}
-          <div className="cabin-summary-section">
-            <h1>{cabin.title}</h1>
-            <div className="cabin-quick-features">
-              <span><i className="fa fa-bed"></i> {cabin.bedrooms} habitaciones</span>
-              <span><i className="fa fa-shower"></i> {cabin.bathrooms} baño</span>
-              <span><i className="fa fa-users"></i> {cabin.capacity} personas</span>
-            </div>
-          </div>
-
-          {/* Contenido de tabs */}
-          <div className="cabin-tab-content">
-            {activeTab === 'resumen' && (
-              <div className="tab-pane">
-                <div className="cabin-services-section">
-                  <h3>Servicios principales</h3>
-                  <div className="services-grid">
-                    <div className="service-item">
-                      <i className="fa fa-car"></i>
-                      <span>Estacionamiento en la propiedad disponible</span>
-                    </div>
-                    <div className="service-item">
-                      <i className="fa fa-cutlery"></i>
-                      <span>Cocina</span>
-                    </div>
-                    <div className="service-item">
-                      <i className="fa fa-fire"></i>
-                      <span>Quincho</span>
-                    </div>
-                    <div className="service-item">
-                      <i className="fa fa-home"></i>
-                      <span>Patio disponible</span>
-                    </div>
-                    <div className="service-item">
-                      <i className="fa fa-tree"></i>
-                      <span>Balcón o patio</span>
-                    </div>
-                    <div className="service-item">
-                      <i className="fa fa-wifi"></i>
-                      <span>Wifi</span>
-                    </div>
-                  </div>
-                  <button 
-                    className="view-all-services-btn"
-                    onClick={() => setShowServicesModal(true)}
+              </div>
+              <div className="gallery-thumbnails">
+                {images.slice(1, 5).map((img, idx) => (
+                  <div
+                    key={idx + 1}
+                    className="gallery-thumb"
+                    onClick={() => { setCurrentImageIndex(idx + 1); setShowLightbox(true); }}
                   >
-                    Ver todos los servicios de la propiedad
-                  </button>
-                </div>
+                    <img src={img} alt={`Imagen ${idx + 2}`} />
+                  </div>
+                ))}
+                {images.length > 5 && (
+                  <div className="gallery-thumb see-more" onClick={() => setShowLightbox(true)}>
+                    <div className="see-more-overlay">
+                      <i className="fa fa-plus"></i>
+                      <span>{images.length - 5}</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </>
+          ) : (
+            <div className="no-images-placeholder">
+              <i className="fa fa-image"></i>
+              <p>No hay imágenes disponibles</p>
+            </div>
+          )}
+        </div>
+      </div>
 
-                <h3>Descripción</h3>
-                <p>{cabin.description}</p>
+      {/* ===== HEADER INFO ===== */}
+      <div className="cabin-header-info">
+        <div className="header-content">
+          <h1 className="cabin-title">{cabin.title}</h1>
+          <div className="cabin-meta">
+            <div className="meta-item">
+              <i className="fa fa-map-marker"></i>
+              <span>{cabin.location}</span>
+            </div>
+            <div className="meta-item">
+              <i className="fa fa-star"></i>
+              <span>{averageRating} • {reviews.length} reseñas</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="header-price-card">
+          <div className="price-display">
+            <span className="currency">$</span>
+            <span className="amount">{cabin.price.toLocaleString('es-ES')}</span>
+            <span className="period">/noche</span>
+          </div>
+        </div>
+      </div>
+
+      {/* ===== QUICK FEATURES ===== */}
+      <div className="cabin-quick-stats">
+        <div className="stat">
+          <i className="fa fa-bed"></i>
+          <div>
+            <div className="stat-value">{cabin.bedrooms}</div>
+            <div className="stat-label">Habitación{cabin.bedrooms !== 1 ? 'es' : ''}</div>
+          </div>
+        </div>
+        <div className="stat">
+          <i className="fa fa-shower"></i>
+          <div>
+            <div className="stat-value">{cabin.bathrooms}</div>
+            <div className="stat-label">Baño{cabin.bathrooms !== 1 ? 's' : ''}</div>
+          </div>
+        </div>
+        <div className="stat">
+          <i className="fa fa-users"></i>
+          <div>
+            <div className="stat-value">{cabin.capacity}</div>
+            <div className="stat-label">Huéspedes</div>
+          </div>
+        </div>
+      </div>
+
+      {/* ===== CONTENT WRAPPER ===== */}
+      <div className="cabin-content-wrapper">
+        {/* LEFT: Main Content */}
+        <div className="cabin-main-content">
+          {/* Tabs */}
+          <div className="cabin-tabs-nav">
+            <button
+              className={`tab-nav-btn ${activeTab === 'resumen' ? 'active' : ''}`}
+              onClick={() => setActiveTab('resumen')}
+            >
+              <i className="fa fa-info-circle"></i> Resumen
+            </button>
+            <button
+              className={`tab-nav-btn ${activeTab === 'servicios' ? 'active' : ''}`}
+              onClick={() => setActiveTab('servicios')}
+            >
+              <i className="fa fa-check-circle"></i> Servicios
+            </button>
+            <button
+              className={`tab-nav-btn ${activeTab === 'politicas' ? 'active' : ''}`}
+              onClick={() => setActiveTab('politicas')}
+            >
+              <i className="fa fa-file-text"></i> Políticas
+            </button>
+            <button
+              className={`tab-nav-btn ${activeTab === 'resenas' ? 'active' : ''}`}
+              onClick={() => setActiveTab('resenas')}
+            >
+              <i className="fa fa-comments"></i> Reseñas ({reviews.length})
+            </button>
+          </div>
+
+          {/* Tab Content */}
+          <div className="cabin-tab-panes">
+            {activeTab === 'resumen' && (
+              <div className="tab-pane-content">
+                <h2>Descripción</h2>
+                <p className="description-text">{cabin.description}</p>
+
+                <h2>Características principales</h2>
+                <div className="features-showcase">
+                  <div className="feature-card">
+                    <i className="fa fa-home"></i>
+                    <h3>Espacio cómodo</h3>
+                    <p>Amplio espacio diseñado para tu comodidad y relajación</p>
+                  </div>
+                  <div className="feature-card">
+                    <i className="fa fa-wifi"></i>
+                    <h3>Conectividad</h3>
+                    <p>WiFi de alta velocidad en toda la propiedad</p>
+                  </div>
+                  <div className="feature-card">
+                    <i className="fa fa-utensils"></i>
+                    <h3>Cocina equipada</h3>
+                    <p>Cocina moderna con todos los electrodomésticos</p>
+                  </div>
+                  <div className="feature-card">
+                    <i className="fa fa-shield"></i>
+                    <h3>Seguridad 24/7</h3>
+                    <p>Vigilancia y cerco con sistema de seguridad</p>
+                  </div>
+                </div>
               </div>
             )}
-            {activeTab === 'politicas' && (
-              <div className="tab-pane">
-                <h3>Políticas de Reservación</h3>
-                <div className="policies-content">
-                  <p>Para garantizar una experiencia clara, cómoda y segura, estas son las políticas de reservación de nuestra cabaña:</p>
 
-                  <h4>1. Confirmación de Reserva</h4>
-                  <ul>
-                    <li>La reserva se confirma únicamente con el pago del 100% del valor total de la estadía.</li>
-                    <li>No se realizarán reservas sin pago.</li>
-                  </ul>
-
-                  <h4>2. Cambios y Modificaciones</h4>
-                  <ul>
-                    <li>Los cambios de fecha están sujetos a disponibilidad.</li>
-                    <li>Se pueden solicitar modificaciones con al menos 7 días de anticipación sin costo adicional.</li>
-                  </ul>
-
-                  <h4>3. Cancelaciones</h4>
-                  <ul>
-                    <li>Cancelaciones con más de 7 días de anticipación: reembolso del 100%.</li>
-                    <li>Cancelaciones entre 7 y 3 días antes de la llegada: reembolso del 50%.</li>
-                    <li>Cancelaciones con menos de 72 horas: no cuentan con devolución.</li>
-                  </ul>
-
-                  <h4>4. No Show (No Presentación)</h4>
-                  <ul>
-                    <li>Si el huésped no llega el día de la reserva sin aviso previo, no habrá devolución del pago.</li>
-                  </ul>
-
-                  <h4>5. Capacidad y Uso de la Cabaña</h4>
-                  <ul>
-                    <li>La cabaña tiene un número máximo de huéspedes permitido. Superarlo no está permitido por razones de seguridad.</li>
-                    <li>No se permiten fiestas, eventos ni reuniones masivas.</li>
-                  </ul>
-
-                  <h4>6. Mascotas</h4>
-                  <ul>
-                    <li>No se aceptan mascotas.</li>
-                  </ul>
-
-                  <h4>7. Check-in y Check-out</h4>
-                  <ul>
-                    <li>Check-in: Desde las 13:00 hrs.</li>
-                    <li>Check-out: Hasta las 12:00 hrs.</li>
-                    <li>Cualquier excepción debe coordinarse con anticipación.</li>
-                  </ul>
-
-                  <h4>8. Seguridad</h4>
-                  <ul>
-                    <li>Los huéspedes son responsables del cuidado de sus pertenencias.</li>
-                    <li>La cabaña debe quedar cerrada cada vez que se salga.</li>
-                  </ul>
-
-                  <h4>9. Daños</h4>
-                  <ul>
-                    <li>Todo daño causado a la propiedad, mobiliario o equipamiento debe ser informado y cubierto por el huésped.</li>
-                  </ul>
-
-                  <h4>10. Condiciones Climáticas</h4>
-                  <ul>
-                    <li>Si por condiciones climáticas extremas no es posible acceder a la zona, se permitirá reprogramar la estadía sin costo.</li>
-                  </ul>
+            {activeTab === 'servicios' && (
+              <div className="tab-pane-content">
+                <h2>Servicios disponibles</h2>
+                <div className="services-grid">
+                  <div className="service-card">
+                    <i className="fa fa-car"></i>
+                    <h3>Estacionamiento</h3>
+                    <p>En la propiedad</p>
+                  </div>
+                  <div className="service-card">
+                    <i className="fa fa-fire"></i>
+                    <h3>Quincho</h3>
+                    <p>Área BBQ completa</p>
+                  </div>
+                  <div className="service-card">
+                    <i className="fa fa-tree"></i>
+                    <h3>Jardín</h3>
+                    <p>Espacios verdes</p>
+                  </div>
+                  <div className="service-card">
+                    <i className="fa fa-tv"></i>
+                    <h3>Entretenimiento</h3>
+                    <p>TV y sistemas</p>
+                  </div>
+                  <div className="service-card">
+                    <i className="fa fa-bed"></i>
+                    <h3>Ropa de cama</h3>
+                    <p>Frazadas incluidas</p>
+                  </div>
+                  <div className="service-card">
+                    <i className="fa fa-gavel"></i>
+                    <h3>Equipamiento</h3>
+                    <p>Completo y moderno</p>
+                  </div>
                 </div>
+                <button className="view-all-services" onClick={() => setShowServicesModal(true)}>
+                  <i className="fa fa-list"></i> Ver todos los servicios
+                </button>
+              </div>
+            )}
+
+            {activeTab === 'politicas' && (
+              <div className="tab-pane-content">
+                <h2>Políticas de reservación</h2>
+                <div className="policies-section">
+                  <div className="policy-card">
+                    <h3><i className="fa fa-check"></i> Confirmación</h3>
+                    <p>La reserva se confirma con el pago del 100% de la estadía</p>
+                  </div>
+                  <div className="policy-card">
+                    <h3><i className="fa fa-calendar"></i> Cambios</h3>
+                    <p>Cambios permitidos con 7 días de anticipación sin costo adicional</p>
+                  </div>
+                  <div className="policy-card">
+                    <h3><i className="fa fa-undo"></i> Cancelación</h3>
+                    <p>• Más de 7 días: 100% de reembolso<br/>• 7-3 días: 50% de reembolso<br/>• Menos de 72h: Sin reembolso</p>
+                  </div>
+                  <div className="policy-card">
+                    <h3><i className="fa fa-clock"></i> Check-in/out</h3>
+                    <p>Check-in: 13:00hrs | Check-out: 12:00hrs</p>
+                  </div>
+                  <div className="policy-card">
+                    <h3><i className="fa fa-users"></i> Capacidad</h3>
+                    <p>Máximo {cabin.capacity} huéspedes. No se permiten fiestas</p>
+                  </div>
+                  <div className="policy-card">
+                    <h3><i className="fa fa-ban"></i> Mascotas</h3>
+                    <p>No se aceptan mascotas en la propiedad</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'resenas' && (
+              <div className="tab-pane-content">
+                <h2>Reseñas de huéspedes</h2>
+                {reviews.length > 0 ? (
+                  <div className="reviews-list">
+                    {reviews.map((review) => (
+                      <div key={review.id} className="review-card">
+                        <div className="review-header">
+                          <div className="reviewer-info">
+                            <div className="reviewer-avatar">
+                              {review.user.name.charAt(0).toUpperCase()}
+                            </div>
+                            <div>
+                              <h4>{review.user.name}</h4>
+                              <div className="review-rating">
+                                {[...Array(5)].map((_, i) => (
+                                  <i
+                                    key={i}
+                                    className={`fa fa-star${i < review.rating ? '' : '-o'}`}
+                                  ></i>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <p className="review-text">{review.comment}</p>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="no-reviews">
+                    <i className="fa fa-star-o"></i>
+                    <p>Aún no hay reseñas. ¡Sé el primero en dejar una!</p>
+                  </div>
+                )}
               </div>
             )}
           </div>
         </div>
 
-        {/* Lado derecho - Card de reserva */}
-        <div className="cabin-right-section">
-          <div className="booking-card">
-            <div className="price-section">
-              <div className="price-display">
-                <span className="currency">$</span>
-                <span className="amount">{cabin.price.toLocaleString('es-ES')}</span>
-              </div>
-              <div className="price-period">por noche</div>
+        {/* RIGHT: Booking Card */}
+        <div className="cabin-booking-sidebar">
+          <div className="booking-card-premium">
+            <div className="card-header">
+              <h3>Reserva tu estadía</h3>
             </div>
 
-            <div className="date-guests-section">
-              <div className="date-selector">
-                <label>Llegada</label>
-                <input 
-                  type="date" 
-                  placeholder="Seleccionar fecha"
-                  value={checkInDate}
-                  onClick={() => setShowBookingCalendar(true)}
-                  readOnly
-                />
-              </div>
-              <div className="date-selector">
-                <label>Salida</label>
-                <input 
-                  type="date" 
-                  placeholder="Seleccionar fecha"
-                  value={checkOutDate}
-                  onClick={() => setShowBookingCalendar(true)}
-                  readOnly
-                />
-              </div>
+            <div className="booking-section">
+              <label>Fechas de reserva</label>
+              <button
+                className="calendar-trigger-btn"
+                onClick={() => setShowBookingCalendar(!showBookingCalendar)}
+              >
+                <i className="fa fa-calendar"></i>
+                {checkInDate && checkOutDate
+                  ? `${checkInDate} → ${checkOutDate}`
+                  : 'Selecciona fechas'}
+              </button>
             </div>
 
-            <div className="guests-selector">
-              <label>Huéspedes</label>
-              <input 
-                type="number" 
-                placeholder="Número de huéspedes"
+            <div className="booking-section">
+              <label>Número de huéspedes</label>
+              <select
                 value={numberOfGuests}
                 onChange={(e) => setNumberOfGuests(e.target.value)}
-                min="1"
-                max={cabin.capacity}
-              />
+                className="booking-input"
+              >
+                <option value="">Selecciona...</option>
+                {[...Array(cabin.capacity)].map((_, i) => (
+                  <option key={i + 1} value={i + 1}>
+                    {i + 1} {i === 0 ? 'huésped' : 'huéspedes'}
+                  </option>
+                ))}
+              </select>
             </div>
 
             {validationError && (
-              <div className="validation-error-message">
+              <div className="error-alert">
                 <i className="fa fa-exclamation-circle"></i>
                 <span>{validationError}</span>
               </div>
             )}
 
-            <button 
-              className="reserve-button" 
+            <button
+              className="reserve-btn-primary"
               onClick={() => {
                 let error = '';
-
-                if (!checkInDate) {
-                  error = 'Por favor selecciona la fecha de llegada';
-                } else if (!checkOutDate) {
-                  error = 'Por favor selecciona la fecha de salida';
-                } else if (!numberOfGuests || parseInt(numberOfGuests) < 1) {
-                  error = 'Por favor selecciona el número de huéspedes';
-                }
+                if (!checkInDate) error = 'Selecciona fecha de llegada';
+                else if (!checkOutDate) error = 'Selecciona fecha de salida';
+                else if (!numberOfGuests) error = 'Selecciona número de huéspedes';
 
                 if (error) {
                   setValidationError(error);
@@ -335,14 +451,12 @@ export const CabinDetail: React.FC = () => {
                 }
 
                 setValidationError('');
-                
                 const token = localStorage.getItem('token');
                 if (!token) {
                   window.location.href = '/login';
                   return;
                 }
 
-                // Navegar a la página de resumen con los datos
                 navigate('/booking-summary', {
                   state: {
                     cabinId: cabin?.id,
@@ -356,87 +470,135 @@ export const CabinDetail: React.FC = () => {
                 });
               }}
             >
-              Reservar
+              <i className="fa fa-calendar-check-o"></i> Continuar con reserva
             </button>
-            <p className="reserve-note">Aún no se te cobrará nada</p>
+
+            <p className="card-note">
+              <i className="fa fa-info-circle"></i> Aún no se cobra nada
+            </p>
+
+            <div className="card-divider"></div>
+
+            <div className="price-breakdown">
+              <div className="price-row">
+                <span>Por noche:</span>
+                <span className="price-value">${cabin.price.toLocaleString('es-ES')}</span>
+              </div>
+              {totalInfo && (
+                <div className="price-row">
+                  <span>Noches:</span>
+                  <span className="price-value">{totalInfo.nights}</span>
+                </div>
+              )}
+              <div className="price-row">
+                <span>Tarifa servicio:</span>
+                <span className="price-value">Gratis</span>
+              </div>
+              <div className="price-row total">
+                <span>Total:</span>
+                <span className="price-value">
+                  {totalInfo 
+                    ? `$${totalInfo.total.toLocaleString('es-ES')}`
+                    : 'A definir'
+                  }
+                </span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Lightbox Modal */}
+      {/* ===== LIGHTBOX MODAL ===== */}
       {showLightbox && images.length > 0 && (
         <div className="lightbox-overlay" onClick={() => setShowLightbox(false)}>
           <div className="lightbox-container" onClick={(e) => e.stopPropagation()}>
             <button className="lightbox-close" onClick={() => setShowLightbox(false)}>
-              ✕
+              <i className="fa fa-times"></i>
             </button>
 
-            <img
-              src={images[currentImageIndex]}
-              alt={`${cabin.title} ampliada`}
-              className="lightbox-image"
-            />
+            <div className="lightbox-main">
+              <img
+                src={images[currentImageIndex]}
+                alt={`${cabin.title}`}
+                className="lightbox-image"
+              />
+            </div>
 
             {images.length > 1 && (
-              <button
-                className="lightbox-nav lightbox-nav-prev"
-                onClick={() => setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length)}
-              >
-                ‹
-              </button>
+              <>
+                <button
+                  className="lightbox-nav lightbox-prev"
+                  onClick={() =>
+                    setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length)
+                  }
+                >
+                  <i className="fa fa-chevron-left"></i>
+                </button>
+                <button
+                  className="lightbox-nav lightbox-next"
+                  onClick={() => setCurrentImageIndex((prev) => (prev + 1) % images.length)}
+                >
+                  <i className="fa fa-chevron-right"></i>
+                </button>
+              </>
             )}
 
-            {images.length > 1 && (
-              <button
-                className="lightbox-nav lightbox-nav-next"
-                onClick={() => setCurrentImageIndex((prev) => (prev + 1) % images.length)}
-              >
-                ›
-              </button>
-            )}
+            <div className="lightbox-counter">
+              {currentImageIndex + 1} / {images.length}
+            </div>
 
-            {images.length > 1 && (
-              <div className="lightbox-counter">
-                {currentImageIndex + 1} / {images.length}
-              </div>
-            )}
+            <div className="lightbox-thumbnails">
+              {images.map((img, idx) => (
+                <div
+                  key={idx}
+                  className={`lightbox-thumb ${idx === currentImageIndex ? 'active' : ''}`}
+                  onClick={() => setCurrentImageIndex(idx)}
+                >
+                  <img src={img} alt={`Thumb ${idx}`} />
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       )}
 
-      {/* Booking Calendar Modal */}
-      {showBookingCalendar && cabin && (
-        <BookingCalendar 
-          cabinId={cabin.id} 
-          price={cabin.price}
-          onClose={() => setShowBookingCalendar(false)}
-          onSelectDates={(checkIn, checkOut) => {
-            setCheckInDate(checkIn);
-            setCheckOutDate(checkOut);
-          }}
-        />
+      {/* ===== BOOKING CALENDAR MODAL ===== */}
+      {showBookingCalendar && (
+        <div className="calendar-modal-overlay" onClick={() => setShowBookingCalendar(false)}>
+          <div className="calendar-modal-dialog" onClick={(e) => e.stopPropagation()}>
+            <button className="calendar-modal-close" onClick={() => setShowBookingCalendar(false)}>
+              <i className="fa fa-times"></i>
+            </button>
+            <BookingCalendar
+              cabinId={cabin?.id || ''}
+              price={cabin?.price || 0}
+              onClose={() => setShowBookingCalendar(false)}
+              onSelectDates={(checkIn, checkOut) => {
+                setCheckInDate(checkIn);
+                setCheckOutDate(checkOut);
+                setShowBookingCalendar(false);
+              }}
+            />
+          </div>
+        </div>
       )}
 
-      {/* Services Modal */}
+      {/* ===== SERVICES MODAL ===== */}
       {showServicesModal && (
         <div className="services-modal-overlay" onClick={() => setShowServicesModal(false)}>
-          <div className="services-modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="services-modal-header">
-              <h2>Servicios de la propiedad</h2>
-              <button 
-                className="services-modal-close"
-                onClick={() => setShowServicesModal(false)}
-              >
-                ✕
+          <div className="services-modal-dialog" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Todos los servicios</h2>
+              <button className="modal-close" onClick={() => setShowServicesModal(false)}>
+                <i className="fa fa-times"></i>
               </button>
             </div>
-
-            <div className="services-modal-body">
-              <div className="service-category">
+            <div className="modal-body">
+              <div className="service-section">
                 <h3>Servicios principales</h3>
                 <ul>
                   <li><i className="fa fa-car"></i> Estacionamiento en la propiedad disponible</li>
-                  <li><i className="fa fa-cutlery"></i> Cocina</li>
+                  <li><i className="fa fa-utensils"></i> Cocina</li>
                   <li><i className="fa fa-fire"></i> Quincho</li>
                   <li><i className="fa fa-home"></i> Patio</li>
                   <li><i className="fa fa-tree"></i> Balcón o patio</li>
@@ -444,119 +606,40 @@ export const CabinDetail: React.FC = () => {
                 </ul>
               </div>
 
-              <div className="service-category">
-                <h3>Estacionamiento y transporte</h3>
-                <ul>
-                  <li><i className="fa fa-car"></i> Estacionamiento en la propiedad</li>
-                </ul>
-              </div>
-
-{/*               <div className="service-category">
-                <h3>Para familias</h3>
-                <ul>
-                  <li><i className="fa fa-child"></i> Área de juegos infantiles</li>
-                  <li><i className="fa fa-spoon"></i> Vajilla para niños</li>
-                </ul>
-              </div> */}
-
-              <div className="service-category">
+              <div className="service-section">
                 <h3>Cocina</h3>
                 <ul>
                   <li><i className="fa fa-fire"></i> Horno</li>
-                  <li><i className="fa fa-glass"></i> Lavavajillas</li>
-                  <li><i className="fa fa-cutlery"></i> Calefont</li>
+                  <li><i className="fa fa-tint"></i> Lavavajillas</li>
+                  <li><i className="fa fa-bars"></i> Calefont</li>
                   <li><i className="fa fa-tint"></i> Tetera eléctrica</li>
-                  <li><i className="fa fa-spoon"></i> Vajilla y utensilios de cocina</li>
+                  <li><i className="fa fa-spoon"></i> Vajilla y utensilios</li>
                 </ul>
               </div>
 
-              <div className="service-category">
-                <h3>Comidas</h3>
-                <ul>
-                  <li><i className="fa fa-square"></i> Mesas</li>
-                  <li><i className="fa fa-chair"></i> Sillas / sillones</li>
-                </ul>
-              </div>
-
-              <div className="service-category">
-                <h3>Habitaciones</h3>
+              <div className="service-section">
+                <h3>Habitaciones y baños</h3>
                 <ul>
                   <li><i className="fa fa-bed"></i> {cabin.bedrooms} habitación{cabin.bedrooms !== 1 ? 'es' : ''}</li>
-                  <li><i className="fa fa-home"></i> Se proporcionan frazadas</li>
-                </ul>
-              </div>
-
-              <div className="service-category">
-                <h3>Baño</h3>
-                <ul>
                   <li><i className="fa fa-shower"></i> {cabin.bathrooms} baño{cabin.bathrooms !== 1 ? 's' : ''}</li>
-                  <li><i className="fa fa-bar-chart"></i> WC</li>
+                  <li><i className="fa fa-droplet"></i> Se proporcionan frazadas</li>
                 </ul>
               </div>
 
-{/*               <div className="service-category">
-                <h3>Regadera</h3>
-                <ul>
-                  <li><i className="fa fa-towel"></i> Se ofrecen toallas</li>
-                </ul>
-              </div> */}
-
-{/*               <div className="service-category">
-                <h3>Áreas comunes para sentarse</h3>
-                <ul>
-                  <li><i className="fa fa-square"></i> Mesa</li>
-                </ul>
-              </div> */}
-
-              <div className="service-category">
+              <div className="service-section">
                 <h3>Entretenimiento</h3>
                 <ul>
-                  <li><i className="fa fa-television"></i> TV</li>
+                  <li><i className="fa fa-tv"></i> Televisión</li>
+                  <li><i className="fa fa-wifi"></i> WiFi de alta velocidad</li>
                 </ul>
               </div>
 
-              <div className="service-category">
-                <h3>Espacios exteriores</h3>
+              <div className="service-section">
+                <h3>Seguridad y acceso</h3>
                 <ul>
-                  <li><i className="fa fa-fire"></i> Quincho</li>
-                  <li><i className="fa fa-leaf"></i> Jardín</li>
-                  <li><i className="fa fa-tree"></i> Patio</li>
-                </ul>
-              </div>
-
-              <div className="service-category">
-                <h3>Mascotas</h3>
-                <ul>
+                  <li><i className="fa fa-shield"></i> Cerco con púas</li>
+                  <li><i className="fa fa-camera"></i> Cámaras de vigilancia</li>
                   <li><i className="fa fa-ban"></i> No se aceptan mascotas</li>
-                </ul>
-              </div>
-
-              <div className="service-category">
-                <h3>Facilidades de acceso</h3>
-                <ul>
-                  <li><i className="fa fa-ban"></i> No se permite fumar en la propiedad</li>
-                </ul>
-              </div>
-
-              <div className="service-category">
-                <h3>Aspectos destacados de la ubicación</h3>
-                <ul>
-                  <li><i className="fa fa-map-marker"></i> A pocos metros de playas, hospital y centro de la ciudad</li>
-                </ul>
-              </div>
-
-{/*               <div className="service-category">
-                <h3>Descripción general</h3>
-                <ul>
-                  <li><i className="fa fa-leaf"></i> Jardín</li>
-                </ul>
-              </div> */}
-
-              <div className="service-category">
-                <h3>Características de seguridad</h3>
-                <ul>
-                  <li><i className="fa fa-shield"></i> Cerco con puas</li>
-                  <li><i className="fa fa-camera"></i> Resinto con camaras de vigilancia</li>
                 </ul>
               </div>
             </div>

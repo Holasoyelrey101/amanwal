@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import axios from 'axios';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faHome, faMapPin, faDollarSign, faUsers, faBed, faBath, faStar, faImage } from '@fortawesome/free-solid-svg-icons';
 import './add-cabin-modal.css';
 
 interface AddCabinModalProps {
@@ -140,132 +142,142 @@ export default function AddCabinModal({ isOpen, onClose, onCabinCreated }: AddCa
   if (!isOpen) return null;
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-header">
-          <h2>➕ Agregar Nueva Cabaña</h2>
-          <button className="btn-close" onClick={onClose}>✕</button>
+    <div className="admin-list-modal-overlay" onClick={onClose}>
+      <div className="admin-list-modal-content" onClick={(e) => e.stopPropagation()}>
+        <div className="admin-list-modal-header">
+          <h2 className="admin-list-modal-title">🏠 Agregar Nueva Cabaña</h2>
+          <button className="admin-list-modal-close" onClick={onClose}>×</button>
         </div>
 
-        <form onSubmit={handleSubmit} className="modal-form">
+        <form onSubmit={handleSubmit} className="admin-form">
           {error && <div className="alert alert-danger">{error}</div>}
 
           {/* Información Básica */}
-          <div className="form-section">
-            <h3>Información Básica</h3>
-            <div className="form-row col-md-4">
-              <div className="form-group">
-                <label htmlFor="title">Título</label>
+          <div className="admin-form-section">
+            <h3 className="admin-form-section-title">Información Básica</h3>
+            <div className="admin-form-row col-md-1">
+              <div className="admin-form-group">
+                <label><FontAwesomeIcon icon={faHome} /> Título</label>
                 <input
                   type="text"
-                  id="title"
                   name="title"
                   value={formData.title}
                   onChange={handleChange}
                   required
                   placeholder="ej: Cabaña con vista al lago"
+                  className="admin-form-control"
                 />
               </div>
-              <div className="form-group">
-                <label htmlFor="location">Ubicación</label>
+            </div>
+            <div className="admin-form-row col-md-1">
+              <div className="admin-form-group">
+                <label><FontAwesomeIcon icon={faMapPin} /> Ubicación</label>
                 <input
                   type="text"
-                  id="location"
                   name="location"
                   value={formData.location}
                   onChange={handleChange}
                   required
                   placeholder="ej: San Martín de los Andes"
+                  className="admin-form-control"
                 />
               </div>
-              <div className="form-group">
-                <label htmlFor="description">Descripción</label>
+            </div>
+            <div className="admin-form-row col-md-1">
+              <div className="admin-form-group">
+                <label>📝 Descripción</label>
                 <textarea
-                  id="description"
                   name="description"
                   value={formData.description}
                   onChange={handleChange}
                   required
                   rows={4}
                   placeholder="Describe la cabaña, comodidades, características..."
+                  className="admin-form-control"
                 />
               </div>
             </div>
           </div>
 
           {/* Detalles y Precios */}
-          <div className="form-section">
-            <h3>Detalles y Precios</h3>
-            <div className="form-row col-md-4">
-              <div className="form-group">
-                <label htmlFor="price">Precio por Noche ($)</label>
+          <div className="admin-form-section">
+            <h3 className="admin-form-section-title">Detalles y Precios</h3>
+            <div className="admin-form-row col-md-1">
+              <div className="admin-form-group">
+                <label><FontAwesomeIcon icon={faDollarSign} /> Precio por Noche</label>
                 <input
                   type="number"
-                  id="price"
                   name="price"
                   value={formData.price}
                   onChange={handleChange}
                   required
                   step="0.01"
                   placeholder="150.00"
+                  className="admin-form-control"
                 />
               </div>
-              <div className="form-group">
-                <label htmlFor="capacity">Capacidad (personas)</label>
+            </div>
+            <div className="admin-form-row col-md-1">
+              <div className="admin-form-group">
+                <label><FontAwesomeIcon icon={faUsers} /> Capacidad (personas)</label>
                 <input
                   type="number"
-                  id="capacity"
                   name="capacity"
                   value={formData.capacity}
                   onChange={handleChange}
                   required
                   placeholder="4"
+                  className="admin-form-control"
                 />
               </div>
-              <div className="form-group">
-                <label htmlFor="bedrooms">Dormitorios</label>
+            </div>
+            <div className="admin-form-row col-md-1">
+              <div className="admin-form-group">
+                <label><FontAwesomeIcon icon={faBed} /> Dormitorios</label>
                 <input
                   type="number"
-                  id="bedrooms"
                   name="bedrooms"
                   value={formData.bedrooms}
                   onChange={handleChange}
                   placeholder="2"
+                  className="admin-form-control"
                 />
               </div>
-              <div className="form-group">
-                <label htmlFor="bathrooms">Baños</label>
+            </div>
+            <div className="admin-form-row col-md-1">
+              <div className="admin-form-group">
+                <label><FontAwesomeIcon icon={faBath} /> Baños</label>
                 <input
                   type="number"
-                  id="bathrooms"
                   name="bathrooms"
                   value={formData.bathrooms}
                   onChange={handleChange}
                   placeholder="1"
+                  className="admin-form-control"
                 />
               </div>
             </div>
           </div>
 
           {/* Comodidades e Imágenes */}
-          <div className="form-section">
-            <h3>Comodidades e Imágenes</h3>
-            <div className="form-row col-md-4">
-              <div className="form-group">
-                <label htmlFor="amenities">Comodidades</label>
+          <div className="admin-form-section">
+            <h3 className="admin-form-section-title">Comodidades e Imágenes</h3>
+            <div className="admin-form-row col-md-1">
+              <div className="admin-form-group">
+                <label><FontAwesomeIcon icon={faStar} /> Comodidades</label>
                 <input
                   type="text"
-                  id="amenities"
                   name="amenities"
                   value={formData.amenities}
                   onChange={handleChange}
                   placeholder="WiFi, TV, Cocina, Piscina, Aire acondicionado"
+                  className="admin-form-control"
                 />
               </div>
             </div>
 
-            <div className="form-group">
-              <label>Imágenes</label>
+            <div className="admin-form-group">
+              <label><FontAwesomeIcon icon={faImage} /> Imágenes</label>
               <div className="image-input-group">
                 <input
                   type="url"
@@ -319,10 +331,10 @@ export default function AddCabinModal({ isOpen, onClose, onCabinCreated }: AddCa
             </div>
           </div>
 
-          <div className="modal-footer">
+          <div className="admin-list-modal-footer">
             <button
               type="button"
-              className="btn btn-secondary"
+              className="admin-btn secondary"
               onClick={onClose}
               disabled={loading}
             >
@@ -330,7 +342,7 @@ export default function AddCabinModal({ isOpen, onClose, onCabinCreated }: AddCa
             </button>
             <button
               type="submit"
-              className="btn btn-primary"
+              className="admin-btn primary"
               disabled={loading}
             >
               {loading ? 'Creando...' : 'Crear Cabaña'}

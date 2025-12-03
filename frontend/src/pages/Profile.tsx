@@ -22,6 +22,7 @@ interface ProfileData {
   email: string;
   name: string;
   phone?: string;
+  birthDate?: string;
   role: string;
   createdAt: string;
   bookings: Booking[];
@@ -37,6 +38,7 @@ export const Profile: React.FC = () => {
   const [editName, setEditName] = useState('');
   const [editPhone, setEditPhone] = useState('');
   const [showPasswordForm, setShowPasswordForm] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
   const [passwords, setPasswords] = useState({
     currentPassword: '',
     newPassword: '',
@@ -57,7 +59,6 @@ export const Profile: React.FC = () => {
       setEditPhone(response.data.phone || '');
     } catch (error) {
       console.error('Error al cargar perfil:', error);
-      alert('Error al cargar perfil');
     } finally {
       setLoading(false);
     }
@@ -65,16 +66,16 @@ export const Profile: React.FC = () => {
 
   const updateProfile = async () => {
     try {
-      const response = await axios.patch(
+      await axios.patch(
         `${API_URL}/auth/profile`,
         { name: editName, phone: editPhone },
         { headers }
       );
-      alert('Perfil actualizado');
+      setSuccessMessage('Perfil actualizado correctamente');
+      setTimeout(() => setSuccessMessage(''), 3000);
       loadProfile();
     } catch (error) {
       console.error('Error al actualizar perfil:', error);
-      alert('Error al actualizar perfil');
     }
   };
 
@@ -94,7 +95,8 @@ export const Profile: React.FC = () => {
         },
         { headers }
       );
-      alert('Contraseña actualizada exitosamente');
+      setSuccessMessage('Contraseña actualizada exitosamente');
+      setTimeout(() => setSuccessMessage(''), 3000);
       setPasswords({ currentPassword: '', newPassword: '', confirmPassword: '' });
       setShowPasswordForm(false);
     } catch (error: any) {
@@ -104,101 +106,193 @@ export const Profile: React.FC = () => {
   };
 
   if (loading) {
-    return <div className="container py-5 text-center">Cargando perfil...</div>;
+    return (
+      <div className="profile-loading">
+        <div className="spinner"></div>
+        <p>Cargando perfil...</p>
+      </div>
+    );
   }
 
   if (!profile) {
-    return <div className="container py-5 text-center">Error al cargar perfil</div>;
+    return (
+      <div className="profile-error">
+        <i className="fa fa-exclamation-circle"></i>
+        <h3>Error al cargar perfil</h3>
+      </div>
+    );
   }
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'confirmed':
+        return { icon: 'fa-check-circle', label: 'Confirmada', class: 'confirmed' };
+      case 'pending':
+        return { icon: 'fa-clock-o', label: 'Pendiente', class: 'pending' };
+      case 'cancelled':
+        return { icon: 'fa-times-circle', label: 'Cancelada', class: 'cancelled' };
+      default:
+        return { icon: 'fa-info-circle', label: status, class: 'default' };
+    }
+  };
+
+  const calculateAge = (birthDate: string) => {
+    const today = new Date();
+    const birth = new Date(birthDate);
+    let age = today.getFullYear() - birth.getFullYear();
+    const monthDiff = today.getMonth() - birth.getMonth();
+    
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+      age--;
+    }
+    
+    return age;
+  };
 
   return (
     <div className="profile-container">
-      <div className="container py-5">
-        <div className="row">
-          {/* Sidebar */}
-          <div className="col-lg-3 mb-4">
-            <div className="card profile-card text-center">
-              <div className="card-body">
-                <div className="avatar-placeholder">👤</div>
-                <h4 className="mt-3">{profile.name}</h4>
-                <p className="text-muted">{profile.email}</p>
-                <span className={`badge bg-${profile.role === 'admin' ? 'danger' : 'primary'}`}>
-                  {profile.role}
+      {/* Header */}
+      <div className="profile-header">
+        <div className="header-content">
+          <h1>Mi Perfil</h1>
+          <p>Gestiona tu información personal y reservas</p>
+        </div>
+      </div>
+
+      <div className="profile-wrapper">
+        {/* Success Message */}
+        {successMessage && (
+          <div className="success-alert">
+            <i className="fa fa-check-circle"></i>
+            <span>{successMessage}</span>
+          </div>
+        )}
+
+        <div className="profile-layout">
+          {/* Sidebar Card */}
+          <div className="profile-sidebar">
+            <div className="profile-card">
+              <div className="avatar">
+                {profile.name.charAt(0).toUpperCase()}
+              </div>
+              <h3 className="profile-name">{profile.name}</h3>
+              <p className="profile-email">{profile.email}</p>
+              <div className={`role-badge ${profile.role === 'admin' ? 'admin' : 'user'}`}>
+                <i className={`fa ${profile.role === 'admin' ? 'fa-shield' : 'fa-user-circle'}`}></i>
+                <span>{profile.role === 'admin' ? 'Administrador' : 'Usuario'}</span>
+              </div>
+              <p className="profile-date">
+                <i className="fa fa-calendar"></i>
+                Miembro desde {new Date(profile.createdAt).toLocaleDateString('es-ES')}
+              </p>
+            </div>
+
+            <div className="profile-stats">
+              <div className="stat">
+                <span className="stat-icon">
+                  <i className="fa fa-calendar-check-o"></i>
                 </span>
-                <p className="small text-muted mt-3">
-                  Miembro desde {new Date(profile.createdAt).toLocaleDateString()}
-                </p>
+                <div>
+                  <span className="stat-value">{profile.bookings.length}</span>
+                  <span className="stat-label">Reservas</span>
+                </div>
               </div>
             </div>
           </div>
 
           {/* Main Content */}
-          <div className="col-lg-9">
+          <div className="profile-content">
             {/* Tabs */}
-            <ul className="nav nav-tabs mb-4" role="tablist">
-              <li className="nav-item" role="presentation">
-                <button
-                  className={`nav-link ${activeTab === 'info' ? 'active' : ''}`}
-                  onClick={() => setActiveTab('info')}
-                >
-                  ℹ️ Información Personal
-                </button>
-              </li>
-              <li className="nav-item" role="presentation">
-                <button
-                  className={`nav-link ${activeTab === 'bookings' ? 'active' : ''}`}
-                  onClick={() => setActiveTab('bookings')}
-                >
-                  🗓️ Mis Reservas ({profile.bookings.length})
-                </button>
-              </li>
-              <li className="nav-item" role="presentation">
-                <button
-                  className={`nav-link ${activeTab === 'password' ? 'active' : ''}`}
-                  onClick={() => setActiveTab('password')}
-                >
-                  🔐 Seguridad
-                </button>
-              </li>
-            </ul>
+            <div className="profile-tabs">
+              <button
+                className={`tab-btn ${activeTab === 'info' ? 'active' : ''}`}
+                onClick={() => setActiveTab('info')}
+              >
+                <i className="fa fa-user"></i>
+                <span>Información Personal</span>
+              </button>
+              <button
+                className={`tab-btn ${activeTab === 'bookings' ? 'active' : ''}`}
+                onClick={() => setActiveTab('bookings')}
+              >
+                <i className="fa fa-calendar-check-o"></i>
+                <span>Mis Reservas</span>
+                <span className="tab-count">{profile.bookings.length}</span>
+              </button>
+              <button
+                className={`tab-btn ${activeTab === 'password' ? 'active' : ''}`}
+                onClick={() => setActiveTab('password')}
+              >
+                <i className="fa fa-lock"></i>
+                <span>Seguridad</span>
+              </button>
+            </div>
 
             {/* Info Tab */}
             {activeTab === 'info' && (
-              <div className="card">
-                <div className="card-header bg-light">
-                  <h5 className="mb-0">Información Personal</h5>
-                </div>
-                <div className="card-body">
-                  <div className="mb-3">
-                    <label className="form-label">Nombre Completo</label>
+              <div className="tab-content">
+                <div className="form-section">
+                  <h3>Información Personal</h3>
+                  
+                  <div className="form-group">
+                    <label>Nombre Completo</label>
                     <input
                       type="text"
-                      className="form-control"
+                      className="form-input"
                       value={editName}
                       onChange={(e) => setEditName(e.target.value)}
+                      placeholder="Tu nombre completo"
                     />
                   </div>
-                  <div className="mb-3">
-                    <label className="form-label">Email</label>
+
+                  <div className="form-group">
+                    <label>Email</label>
                     <input
                       type="email"
-                      className="form-control"
+                      className="form-input"
                       value={profile.email}
                       disabled
+                      placeholder="Tu email"
                     />
+                    <small>El email no puede ser cambiado</small>
                   </div>
-                  <div className="mb-3">
-                    <label className="form-label">Teléfono</label>
+
+                  <div className="form-group">
+                    <label>Teléfono</label>
                     <input
                       type="tel"
-                      className="form-control"
+                      className="form-input"
                       value={editPhone}
                       onChange={(e) => setEditPhone(e.target.value)}
-                      placeholder="Opcional"
+                      placeholder="Tu teléfono (opcional)"
                     />
                   </div>
-                  <button className="btn btn-primary" onClick={updateProfile}>
-                    💾 Guardar Cambios
+
+                  <div className="form-group">
+                    <label>Fecha de Nacimiento</label>
+                    <input
+                      type="date"
+                      className="form-input"
+                      value={profile.birthDate ? new Date(profile.birthDate).toISOString().split('T')[0] : ''}
+                      disabled
+                      placeholder="Tu fecha de nacimiento"
+                    />
+                    <small>La fecha de nacimiento no puede ser cambiada</small>
+                  </div>
+
+                  {profile.birthDate && (
+                    <div className="form-group">
+                      <label>Edad</label>
+                      <div className="age-display">
+                        <i className="fa fa-calendar-o"></i>
+                        <span>{calculateAge(profile.birthDate)} años</span>
+                      </div>
+                    </div>
+                  )}
+
+                  <button className="btn-save" onClick={updateProfile}>
+                    <i className="fa fa-save"></i>
+                    Guardar Cambios
                   </button>
                 </div>
               </div>
@@ -206,43 +300,60 @@ export const Profile: React.FC = () => {
 
             {/* Bookings Tab */}
             {activeTab === 'bookings' && (
-              <div>
+              <div className="tab-content">
                 {profile.bookings.length > 0 ? (
-                  <div className="row">
-                    {profile.bookings.map((booking) => (
-                      <div key={booking.id} className="col-md-6 mb-3">
-                        <div className="card booking-card">
-                          <div className="card-body">
-                            <h5 className="card-title">{booking.cabin.title}</h5>
-                            <p className="text-muted small">{booking.cabin.location}</p>
-
-                            <div className="booking-dates">
-                              <div className="date-item">
-                                <span className="label">Check-in:</span>
-                                <span>{new Date(booking.checkIn).toLocaleDateString()}</span>
-                              </div>
-                              <div className="date-item">
-                                <span className="label">Check-out:</span>
-                                <span>{new Date(booking.checkOut).toLocaleDateString()}</span>
-                              </div>
+                  <div className="bookings-list">
+                    <h3>Tus Reservas</h3>
+                    {profile.bookings.map((booking) => {
+                      const statusBadge = getStatusBadge(booking.status);
+                      return (
+                        <div key={booking.id} className="booking-item">
+                          <div className="booking-info">
+                            <h4>{booking.cabin.title}</h4>
+                            <div className="booking-location">
+                              <i className="fa fa-map-marker"></i>
+                              <span>{booking.cabin.location}</span>
                             </div>
 
-                            <div className="booking-footer mt-3">
-                              <div>
-                                <strong className="price">${booking.totalPrice.toLocaleString('es-ES')}</strong>
+                            <div className="booking-details">
+                              <div className="detail">
+                                <span className="label">Check-in</span>
+                                <span className="value">
+                                  {new Date(booking.checkIn).toLocaleDateString('es-ES')}
+                                </span>
                               </div>
-                              <span className={`badge bg-${booking.status === 'confirmed' ? 'success' : booking.status === 'pending' ? 'warning' : 'danger'}`}>
-                                {booking.status === 'confirmed' ? '✓ Confirmada' : booking.status === 'pending' ? '⏳ Pendiente' : '✗ Cancelada'}
-                              </span>
+                              <div className="detail">
+                                <span className="label">Check-out</span>
+                                <span className="value">
+                                  {new Date(booking.checkOut).toLocaleDateString('es-ES')}
+                                </span>
+                              </div>
+                              <div className="detail">
+                                <span className="label">Total</span>
+                                <span className="value price">
+                                  ${booking.totalPrice.toLocaleString('es-ES')}
+                                </span>
+                              </div>
                             </div>
                           </div>
+
+                          <div className={`status-badge ${statusBadge.class}`}>
+                            <i className={`fa ${statusBadge.icon}`}></i>
+                            <span>{statusBadge.label}</span>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 ) : (
-                  <div className="alert alert-info">
-                    📭 No tienes reservas aún. <a href="/cabins">Explora nuestras cabañas</a>
+                  <div className="empty-bookings">
+                    <i className="fa fa-inbox"></i>
+                    <h4>No tienes reservas aún</h4>
+                    <p>¡Comienza a explorar nuestras cabañas y haz tu primera reserva!</p>
+                    <a href="/cabins" className="btn-explore">
+                      <i className="fa fa-arrow-right"></i>
+                      Explorar Cabañas
+                    </a>
                   </div>
                 )}
               </div>
@@ -250,62 +361,73 @@ export const Profile: React.FC = () => {
 
             {/* Password Tab */}
             {activeTab === 'password' && (
-              <div className="card">
-                <div className="card-header bg-light">
-                  <h5 className="mb-0">Cambiar Contraseña</h5>
-                </div>
-                <div className="card-body">
+              <div className="tab-content">
+                <div className="form-section">
+                  <h3>Cambiar Contraseña</h3>
+                  <p className="section-description">
+                    Actualiza tu contraseña regularmente para mantener tu cuenta segura
+                  </p>
+
                   {!showPasswordForm ? (
                     <button
-                      className="btn btn-warning"
+                      className="btn-change-password"
                       onClick={() => setShowPasswordForm(true)}
                     >
-                      🔐 Cambiar Contraseña
+                      <i className="fa fa-key"></i>
+                      Cambiar Contraseña
                     </button>
                   ) : (
-                    <div>
-                      <div className="mb-3">
-                        <label className="form-label">Contraseña Actual</label>
+                    <div className="password-form">
+                      <div className="form-group">
+                        <label>Contraseña Actual</label>
                         <input
                           type="password"
-                          className="form-control"
+                          className="form-input"
                           value={passwords.currentPassword}
                           onChange={(e) =>
                             setPasswords({ ...passwords, currentPassword: e.target.value })
                           }
+                          placeholder="Tu contraseña actual"
                         />
                       </div>
-                      <div className="mb-3">
-                        <label className="form-label">Nueva Contraseña</label>
+
+                      <div className="form-group">
+                        <label>Nueva Contraseña</label>
                         <input
                           type="password"
-                          className="form-control"
+                          className="form-input"
                           value={passwords.newPassword}
                           onChange={(e) =>
                             setPasswords({ ...passwords, newPassword: e.target.value })
                           }
+                          placeholder="Tu nueva contraseña"
                         />
                       </div>
-                      <div className="mb-3">
-                        <label className="form-label">Confirmar Contraseña</label>
+
+                      <div className="form-group">
+                        <label>Confirmar Contraseña</label>
                         <input
                           type="password"
-                          className="form-control"
+                          className="form-input"
                           value={passwords.confirmPassword}
                           onChange={(e) =>
                             setPasswords({ ...passwords, confirmPassword: e.target.value })
                           }
+                          placeholder="Confirma tu nueva contraseña"
                         />
                       </div>
-                      <div className="gap-2 d-flex">
-                        <button className="btn btn-primary" onClick={changePassword}>
-                          ✓ Cambiar Contraseña
+
+                      <div className="form-actions">
+                        <button className="btn-save" onClick={changePassword}>
+                          <i className="fa fa-check"></i>
+                          Cambiar Contraseña
                         </button>
                         <button
-                          className="btn btn-secondary"
+                          className="btn-cancel"
                           onClick={() => setShowPasswordForm(false)}
                         >
-                          ✗ Cancelar
+                          <i className="fa fa-times"></i>
+                          Cancelar
                         </button>
                       </div>
                     </div>
