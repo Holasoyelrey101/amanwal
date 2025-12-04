@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
+import apiClient from '../api/client';
 import './my-bookings.css';
 
 interface Cabin {
@@ -20,10 +20,8 @@ interface Booking {
   cabin: Cabin;
 }
 
-const API_URL = 'http://localhost:3000/api';
-
 export const MyBookings: React.FC = () => {
-  const { token, isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuth();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -39,9 +37,7 @@ export const MyBookings: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await axios.get(`${API_URL}/bookings`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await apiClient.get('/bookings');
       setBookings(response.data);
     } catch (err) {
       console.error('Error al cargar reservas:', err);
@@ -57,10 +53,9 @@ export const MyBookings: React.FC = () => {
     }
 
     try {
-      await axios.patch(
-        `${API_URL}/bookings/${bookingId}/cancel`,
-        {},
-        { headers: { Authorization: `Bearer ${token}` } }
+      await apiClient.patch(
+        `/bookings/${bookingId}/cancel`,
+        {}
       );
       setBookings(bookings.map(b => 
         b.id === bookingId ? { ...b, status: 'cancelled' } : b

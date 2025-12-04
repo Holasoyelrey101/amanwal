@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { useAuth } from '../context/AuthContext';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHome, faMapPin, faDollarSign, faUsers, faBed, faBath, faStar, faImage } from '@fortawesome/free-solid-svg-icons';
+import apiClient from '../api/client';
 import './add-cabin-modal.css';
 
 interface EditCabinModalProps {
@@ -23,15 +22,12 @@ interface EditCabinModalProps {
   } | null;
 }
 
-const API_URL = 'http://localhost:3000/api';
-
 export const EditCabinModal: React.FC<EditCabinModalProps> = ({
   isOpen,
   onClose,
   onCabinUpdated,
   cabin,
 }) => {
-  const { token } = useAuth();
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -45,8 +41,6 @@ export const EditCabinModal: React.FC<EditCabinModalProps> = ({
   const [imageList, setImageList] = useState<string[]>([]);
   const [newImageUrl, setNewImageUrl] = useState('');
   const [loading, setLoading] = useState(false);
-
-  const headers = { Authorization: `Bearer ${token}` };
 
   useEffect(() => {
     if (cabin && isOpen) {
@@ -103,32 +97,41 @@ export const EditCabinModal: React.FC<EditCabinModalProps> = ({
     }
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
-    if (files && files.length > 0) {
-      const fileReadPromises: Promise<string>[] = [];
+    if (!files || files.length === 0) return;
 
+    try {
+      setLoading(true);
+
+      // Crear FormData con los archivos
+      const formData = new FormData();
       Array.from(files).forEach((file) => {
-        const promise = new Promise<string>((resolve) => {
-          const reader = new FileReader();
-          reader.onload = (event) => {
-            const result = event.target?.result as string;
-            resolve(result);
-          };
-          reader.readAsDataURL(file);
-        });
-        fileReadPromises.push(promise);
+        formData.append('images', file);
       });
 
-      Promise.all(fileReadPromises).then((results) => {
+      // Enviar al backend para procesar y convertir a WebP
+      const response = await apiClient.post('/upload/upload-images', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      // Agregar las URLs retornadas a la lista
+      if (response.data.imageUrls && Array.isArray(response.data.imageUrls)) {
         setImageList((prevList) => [
           ...prevList,
-          ...results.filter((img) => !prevList.includes(img)),
+          ...response.data.imageUrls.filter((img: string) => !prevList.includes(img)),
         ]);
-      });
+      }
 
-      // Resetear el input para permitir seleccionar el mismo archivo de nuevo
+      // Resetear el input
       e.target.value = '';
+    } catch (err: any) {
+      console.error('Error en upload:', err);
+      alert(err.response?.data?.error || 'Error al subir imágenes');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -146,7 +149,7 @@ export const EditCabinModal: React.FC<EditCabinModalProps> = ({
         images: imageList,
       };
 
-      await axios.put(`${API_URL}/admin/cabins/${cabin?.id}`, updateData, { headers });
+      await apiClient.put(`/admin/cabins/${cabin?.id}`, updateData);
       alert('Cabaña actualizada exitosamente');
       onCabinUpdated();
       onClose();

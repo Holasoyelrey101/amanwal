@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTimes, faShield, faCheck } from '@fortawesome/free-solid-svg-icons';
-import axios from 'axios';
+import apiClient from '../api/client';
 import './role-assignment-modal.css';
 
 interface RoleAssignmentModalProps {
@@ -11,7 +11,6 @@ interface RoleAssignmentModalProps {
   userName: string;
   currentRole: string;
   onRoleUpdated: () => void;
-  token: string;
 }
 
 const ROLES = [
@@ -79,7 +78,6 @@ export const RoleAssignmentModal: React.FC<RoleAssignmentModalProps> = ({
   userName,
   currentRole,
   onRoleUpdated,
-  token
 }) => {
   const [selectedRole, setSelectedRole] = useState(currentRole);
   const [loading, setLoading] = useState(false);
@@ -97,11 +95,9 @@ export const RoleAssignmentModal: React.FC<RoleAssignmentModalProps> = ({
     setSuccess(false);
 
     try {
-      const headers = { Authorization: `Bearer ${token}` };
-      await axios.patch(
-        `http://localhost:3000/api/admin/users/${userId}/role`,
-        { role: selectedRole },
-        { headers }
+      await apiClient.patch(
+        `/admin/users/${userId}/role`,
+        { role: selectedRole }
       );
 
       setSuccess(true);

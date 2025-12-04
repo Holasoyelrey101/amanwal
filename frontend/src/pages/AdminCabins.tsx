@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import AddCabinModal from '../components/AddCabinModal';
 import { EditCabinModal } from '../components/EditCabinModal';
 import { ThemeSelector } from '../components/ThemeSelector';
+import apiClient from '../api/client';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft, faEdit, faTrash, faPlus, faMagnifyingGlass, faHome, faMapPin, faDollarSign } from '@fortawesome/free-solid-svg-icons';
 import './admin.css';
@@ -47,10 +47,7 @@ export const AdminCabins: React.FC = () => {
 
   const fetchCabins = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get('http://localhost:3000/api/admin/cabins', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await apiClient.get('/admin/cabins');
       setCabins(response.data);
     } catch (error) {
       console.error('Error al obtener cabañas:', error);
@@ -66,10 +63,7 @@ export const AdminCabins: React.FC = () => {
   const confirmDelete = async () => {
     if (!deletingCabinId) return;
     try {
-      const token = localStorage.getItem('token');
-      await axios.delete(`http://localhost:3000/api/admin/cabins/${deletingCabinId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await apiClient.delete(`/admin/cabins/${deletingCabinId}`);
       setCabins(cabins.filter((c) => c.id !== deletingCabinId));
       setDeletingCabinId(null);
     } catch (error) {

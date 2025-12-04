@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import apiClient from '../api/client';
 import { ThemeSelector } from '../components/ThemeSelector';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUsers, faHome, faCalendar, faStar, faShield, faKey } from '@fortawesome/free-solid-svg-icons';
@@ -16,10 +16,8 @@ interface DashboardStats {
   recentBookings: number;
 }
 
-const API_URL = 'http://localhost:3000/api';
-
 export const AdminDashboard: React.FC = () => {
-  const { token, isAdmin } = useAuth();
+  const { isAdmin } = useAuth();
   const navigate = useNavigate();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -34,8 +32,7 @@ export const AdminDashboard: React.FC = () => {
 
   const fetchStats = async () => {
     try {
-      const headers = { Authorization: `Bearer ${token}` };
-      const response = await axios.get(`${API_URL}/admin/dashboard`, { headers });
+      const response = await apiClient.get('/admin/dashboard');
       setStats(response.data);
     } catch (error) {
       console.error('Error al obtener estadísticas:', error);

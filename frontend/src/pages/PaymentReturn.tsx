@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import apiClient from '../api/client';
 import './payment-return.css';
 
 export const PaymentReturn: React.FC = () => {
@@ -12,7 +13,6 @@ export const PaymentReturn: React.FC = () => {
   useEffect(() => {
     const checkPaymentStatus = async () => {
       try {
-        const token = localStorage.getItem('token');
         
         if (!bookingId) {
           setStatus('failed');
@@ -24,17 +24,8 @@ export const PaymentReturn: React.FC = () => {
         await new Promise(resolve => setTimeout(resolve, 2000));
 
         // Obtener estado de la reserva
-        const response = await fetch(`http://localhost:3000/api/bookings/${bookingId}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-
-        if (!response.ok) {
-          throw new Error('Error al obtener estado de la reserva');
-        }
-
-        const bookingData = await response.json();
+        const response = await apiClient.get(`/bookings/${bookingId}`);
+        const bookingData = response.data;
         setBooking(bookingData);
 
         if (bookingData.paymentStatus === 'completed') {

@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { ThemeSelector } from '../components/ThemeSelector';
 import { RoleAssignmentModal } from '../components/RoleAssignmentModal';
 import { useAuth } from '../context/AuthContext';
+import apiClient from '../api/client';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft, faEdit, faTrash, faPlus, faMagnifyingGlass, faCrown, faUser, faEnvelope, faCalendarAlt, faHome, faClock, faChevronLeft, faChevronRight, faUsers, faLock, faShield, faHeadset, faCode } from '@fortawesome/free-solid-svg-icons';
 import './admin.css';
@@ -33,7 +33,6 @@ export const AdminUsers: React.FC = () => {
   const [roleModalOpen, setRoleModalOpen] = useState(false);
   const [selectedUserForRole, setSelectedUserForRole] = useState<User | null>(null);
   const navigate = useNavigate();
-  const { token } = useAuth();
   const { refreshUser } = useAuth();
   const itemsPerPage = 10;
 
@@ -43,10 +42,7 @@ export const AdminUsers: React.FC = () => {
 
   const fetchUsers = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get('http://localhost:3000/api/admin/users', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await apiClient.get('/admin/users');
       setUsers(response.data);
     } catch (error) {
       console.error('Error al obtener usuarios:', error);
@@ -70,7 +66,6 @@ export const AdminUsers: React.FC = () => {
     if (!editingUser) return;
 
     try {
-      const token = localStorage.getItem('token');
       const updateData: any = {
         name: editForm.name,
         email: editForm.email,
@@ -84,10 +79,9 @@ export const AdminUsers: React.FC = () => {
         updateData.role = editForm.makeAdmin ? 'admin' : 'user';
       }
 
-      const response = await axios.patch(
-        `http://localhost:3000/api/admin/users/${editingUser.id}`,
-        updateData,
-        { headers: { Authorization: `Bearer ${token}` } }
+      const response = await apiClient.patch(
+        `/admin/users/${editingUser.id}`,
+        updateData
       );
 
       setUsers(users.map(u => u.id === editingUser.id ? response.data : u));
@@ -113,10 +107,7 @@ export const AdminUsers: React.FC = () => {
 
   const handleDeleteUser = async (userId: string) => {
     try {
-      const token = localStorage.getItem('token');
-      await axios.delete(`http://localhost:3000/api/admin/users/${userId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await apiClient.delete(`/admin/users/${userId}`);
       setUsers(users.filter(u => u.id !== userId));
       setConfirmModal(null);
     } catch (error) {
@@ -128,11 +119,9 @@ export const AdminUsers: React.FC = () => {
 
   const handleAdminChange = async (user: User, makeAdmin: boolean) => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.patch(
-        `http://localhost:3000/api/admin/users/${user.id}`,
-        { role: makeAdmin ? 'admin' : 'user' },
-        { headers: { Authorization: `Bearer ${token}` } }
+      const response = await apiClient.patch(
+        `/admin/users/${user.id}`,
+        { role: makeAdmin ? 'admin' : 'user' }
       );
 
       // Asegurar que la respuesta tenga _count
@@ -462,7 +451,6 @@ export const AdminUsers: React.FC = () => {
           userName={selectedUserForRole.name}
           currentRole={selectedUserForRole.role || 'user'}
           onRoleUpdated={fetchUsers}
-          token={token || ''}
         />
       )}
     </div>

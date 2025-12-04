@@ -23,8 +23,8 @@ export const Footer: React.FC = () => {
           <div className="col-md-4 mb-3">
             <h6>Contacto</h6>
             <p className="small">
-              Email: info@amanwal.com<br />
-              Teléfono: +34 XXX XXX XXX
+              Email: cabanasamanwal@gmail.com<br />
+              Teléfono: +569 99347073
             </p>
           </div>
         </div>

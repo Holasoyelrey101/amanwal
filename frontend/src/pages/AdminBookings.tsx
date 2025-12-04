@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { ThemeSelector } from '../components/ThemeSelector';
+import apiClient from '../api/client';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft, faEye, faXmark, faTrash, faMagnifyingGlass, faCalendarAlt, faUser, faHome, faDollarSign } from '@fortawesome/free-solid-svg-icons';
 import './admin.css';
@@ -46,10 +46,7 @@ export const AdminBookings: React.FC = () => {
 
   const fetchBookings = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get('http://localhost:3000/api/admin/bookings', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await apiClient.get('/admin/bookings');
       setBookings(response.data);
     } catch (error) {
       console.error('Error al obtener reservas:', error);
@@ -65,10 +62,7 @@ export const AdminBookings: React.FC = () => {
   const confirmDelete = async () => {
     if (!deletingBookingId) return;
     try {
-      const token = localStorage.getItem('token');
-      await axios.delete(`http://localhost:3000/api/bookings/${deletingBookingId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await apiClient.delete(`/bookings/${deletingBookingId}`);
       setBookings(bookings.filter((b) => b.id !== deletingBookingId));
       setDeletingBookingId(null);
     } catch (error) {
@@ -84,10 +78,7 @@ export const AdminBookings: React.FC = () => {
   const confirmCancel = async () => {
     if (!cancellingBookingId) return;
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.patch(`http://localhost:3000/api/bookings/${cancellingBookingId}/cancel`, {}, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await apiClient.patch(`/bookings/${cancellingBookingId}/cancel`, {});
       setBookings(bookings.map(b => b.id === cancellingBookingId ? response.data : b));
       setCancellingBookingId(null);
     } catch (error) {

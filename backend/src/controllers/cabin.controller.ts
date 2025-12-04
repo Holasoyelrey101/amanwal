@@ -18,7 +18,22 @@ export const getAllCabins = async (req: AuthRequest, res: Response): Promise<voi
       },
     });
 
-    res.json(cabins);
+    // Limitar imágenes a solo la primera para mejorar rendimiento de lista
+    const optimizedCabins = cabins.map(cabin => {
+      let images = [];
+      try {
+        const parsedImages = JSON.parse(cabin.images || '[]');
+        images = Array.isArray(parsedImages) ? parsedImages.slice(0, 1) : [];
+      } catch (e) {
+        console.error('Error parsing images:', e);
+      }
+      return {
+        ...cabin,
+        images,
+      };
+    });
+
+    res.json(optimizedCabins);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Error al obtener cabañas' });
@@ -48,7 +63,19 @@ export const getCabinById = async (req: AuthRequest, res: Response): Promise<voi
       return;
     }
 
-    res.json(cabin);
+    // Parsear imágenes y devolver todo
+    let images = [];
+    try {
+      const parsedImages = JSON.parse(cabin.images || '[]');
+      images = Array.isArray(parsedImages) ? parsedImages : [];
+    } catch (e) {
+      console.error('Error parsing images:', e);
+    }
+
+    res.json({
+      ...cabin,
+      images,
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Error al obtener cabaña' });

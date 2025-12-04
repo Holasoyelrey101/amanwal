@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import apiClient from '../api/client';
 import './booking-summary.css';
 
 interface User {
@@ -27,14 +28,8 @@ export const BookingSummary: React.FC = () => {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const token = localStorage.getItem('token');
-        const response = await fetch('http://localhost:3000/api/auth/me', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-        const userData = await response.json();
-        setUser(userData);
+        const response = await apiClient.get('/auth/me');
+        setUser(response.data);
       } catch (err) {
         console.error('Error cargando datos del usuario:', err);
       } finally {
@@ -63,52 +58,25 @@ export const BookingSummary: React.FC = () => {
 
   const handleCompleteBooking = async () => {
     try {
-      const token = localStorage.getItem('token');
       
       // Paso 1: Crear la reserva
-      const bookingResponse = await fetch('http://localhost:3000/api/bookings', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          cabinId: state.cabinId,
-          checkIn: state.checkInDate,
-          checkOut: state.checkOutDate,
-          guests: state.numberOfGuests
-        })
+      const bookingResponse = await apiClient.post('/bookings', {
+        cabinId: state.cabinId,
+        checkIn: state.checkInDate,
+        checkOut: state.checkOutDate,
+        guests: state.numberOfGuests
       });
 
-      if (!bookingResponse.ok) {
-        const error = await bookingResponse.json();
-        alert('Error: ' + error.error);
-        return;
-      }
-
-      const bookingData = await bookingResponse.json();
+      const bookingData = bookingResponse.data;
       const bookingId = bookingData.id;
       console.log('✅ Reserva creada exitosamente:', bookingId);
 
       // Paso 2: Crear la orden de pago en Flow
-      const paymentResponse = await fetch('http://localhost:3000/api/payments/create', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          bookingId: bookingId
-        })
+      const paymentResponse = await apiClient.post('/payments/create', {
+        bookingId: bookingId
       });
 
-      if (!paymentResponse.ok) {
-        const error = await paymentResponse.json();
-        alert('Error al procesar pago: ' + error.error);
-        return;
-      }
-
-      const paymentData = await paymentResponse.json();
+      const paymentData = paymentResponse.data;
       console.log('✅ Orden de pago creada:', paymentData.flowOrder);
 
       // Paso 3: Redirigir a Flow para completar el pago

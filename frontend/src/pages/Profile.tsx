@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
+import apiClient from '../api/client';
 import './profile.css';
 
 interface Booking {
@@ -28,10 +28,8 @@ interface ProfileData {
   bookings: Booking[];
 }
 
-const API_URL = 'http://localhost:3000/api';
-
 export const Profile: React.FC = () => {
-  const { token, user } = useAuth();
+  const { token } = useAuth();
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'info' | 'bookings' | 'password'>('info');
@@ -45,15 +43,13 @@ export const Profile: React.FC = () => {
     confirmPassword: '',
   });
 
-  const headers = { Authorization: `Bearer ${token}` };
-
   useEffect(() => {
     loadProfile();
   }, []);
 
   const loadProfile = async () => {
     try {
-      const response = await axios.get(`${API_URL}/auth/profile`, { headers });
+      const response = await apiClient.get('/auth/profile');
       setProfile(response.data);
       setEditName(response.data.name);
       setEditPhone(response.data.phone || '');
@@ -66,10 +62,9 @@ export const Profile: React.FC = () => {
 
   const updateProfile = async () => {
     try {
-      await axios.patch(
-        `${API_URL}/auth/profile`,
-        { name: editName, phone: editPhone },
-        { headers }
+      await apiClient.patch(
+        '/auth/profile',
+        { name: editName, phone: editPhone }
       );
       setSuccessMessage('Perfil actualizado correctamente');
       setTimeout(() => setSuccessMessage(''), 3000);
@@ -86,14 +81,13 @@ export const Profile: React.FC = () => {
     }
 
     try {
-      await axios.post(
-        `${API_URL}/auth/change-password`,
+      await apiClient.post(
+        '/auth/change-password',
         {
           currentPassword: passwords.currentPassword,
           newPassword: passwords.newPassword,
           confirmPassword: passwords.confirmPassword,
-        },
-        { headers }
+        }
       );
       setSuccessMessage('Contraseña actualizada exitosamente');
       setTimeout(() => setSuccessMessage(''), 3000);
