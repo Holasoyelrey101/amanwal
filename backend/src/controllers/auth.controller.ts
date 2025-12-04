@@ -40,7 +40,9 @@ export const register = async (req: AuthRequest, res: Response): Promise<void> =
       return;
     }
 
-    if (!isEmail(email)) {
+    // Validación de email más permisiva (permite @live.cl, @outlook.com, etc.)
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
       res.status(400).json({ error: 'Email inválido' });
       return;
     }
