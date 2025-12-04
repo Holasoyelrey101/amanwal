@@ -29,12 +29,12 @@ export const VerifyEmail: React.FC = () => {
           localStorage.setItem('user', JSON.stringify(response.data.user));
           
           setStatus('success');
-          setMessage('✓ Email verificado correctamente. Iniciando sesión...');
+          setMessage('✓ Email verificado correctamente. Redirigiendo...');
           
           // Redirigir después de 2 segundos
           setTimeout(() => {
             login(response.data.user, response.data.token);
-            navigate('/dashboard');
+            navigate('/');
           }, 2000);
         }
       } catch (error: any) {
