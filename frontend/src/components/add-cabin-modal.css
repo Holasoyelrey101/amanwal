@@ -491,7 +491,7 @@ div.modal-overlay div.modal-content {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   background: rgba(15, 23, 42, 0.6);
-  color: #e0e0e0;
+  color: #ffffff;
   flex-grow: 1;
 }
 
@@ -502,7 +502,8 @@ div.modal-overlay div.modal-content {
 .admin-form-control:focus {
   outline: none;
   border-color: #3b82f6;
-  background: rgba(15, 23, 42, 0.9);
+  background: rgba(15, 23, 42, 0.95);
+  color: #ffffff;
   box-shadow: 0 0 0 6px rgba(59, 130, 246, 0.15);
   transform: translateY(-2px);
 }
@@ -960,6 +961,7 @@ div.modal-overlay div.modal-content .modal-footer .btn-secondary:hover:not(:disa
 .admin-list-modal-content textarea:focus {
   background: rgba(15, 23, 42, 0.9) !important;
   border-color: #3b82f6 !important;
+  color: #ffffff !important;
   box-shadow: 0 0 0 6px rgba(59, 130, 246, 0.15) !important;
   transform: translateY(-2px) !important;
 }
@@ -967,12 +969,13 @@ div.modal-overlay div.modal-content .modal-footer .btn-secondary:hover:not(:disa
 .admin-list-modal-content .admin-form-control {
   background: rgba(15, 23, 42, 0.6) !important;
   border: 2px solid rgba(59, 130, 246, 0.3) !important;
-  color: #e0e0e0 !important;
+  color: #ffffff !important;
   padding: 14px 16px !important;
 }
 
 .admin-list-modal-content .admin-form-control:focus {
-  background: rgba(15, 23, 42, 0.9) !important;
+  background: rgba(15, 23, 42, 0.95) !important;
   border-color: #3b82f6 !important;
+  color: #ffffff !important;
   box-shadow: 0 0 0 6px rgba(59, 130, 246, 0.15) !important;
 }

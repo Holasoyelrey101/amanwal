@@ -17,7 +17,6 @@ interface EditCabinModalProps {
     capacity: number;
     bedrooms: number;
     bathrooms: number;
-    amenities: string;
     images: string[];
   } | null;
 }
@@ -36,7 +35,6 @@ export const EditCabinModal: React.FC<EditCabinModalProps> = ({
     capacity: '',
     bedrooms: '',
     bathrooms: '',
-    amenities: '',
   });
   const [imageList, setImageList] = useState<string[]>([]);
   const [newImageUrl, setNewImageUrl] = useState('');
@@ -52,7 +50,6 @@ export const EditCabinModal: React.FC<EditCabinModalProps> = ({
         capacity: cabin.capacity?.toString() || '',
         bedrooms: cabin.bedrooms?.toString() || '',
         bathrooms: cabin.bathrooms?.toString() || '',
-        amenities: cabin.amenities || '',
       });
       
       // Parsear las imágenes correctamente
@@ -274,20 +271,7 @@ export const EditCabinModal: React.FC<EditCabinModalProps> = ({
 
           {/* Comodidades e Imágenes */}
           <div className="admin-form-section">
-            <h3 className="admin-form-section-title">Comodidades e Imágenes</h3>
-            <div className="admin-form-row col-md-1">
-              <div className="admin-form-group">
-                <label><FontAwesomeIcon icon={faStar} /> Comodidades</label>
-                <input
-                  type="text"
-                  name="amenities"
-                  value={formData.amenities}
-                  onChange={handleChange}
-                  className="admin-form-control"
-                  placeholder="WiFi, TV, Cocina, etc..."
-                />
-              </div>
-            </div>
+            <h3 className="admin-form-section-title">📸 Imágenes</h3>
 
             <div className="admin-form-group">
               <label><FontAwesomeIcon icon={faImage} /> Imágenes</label>

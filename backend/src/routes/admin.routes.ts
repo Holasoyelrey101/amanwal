@@ -14,6 +14,7 @@ import {
   getAllBookingsAdmin,
   confirmBookingAdmin,
   updateBookingAdmin,
+  createManualBooking,
 } from '../controllers/admin.controller';
 
 const router = Router();
@@ -38,6 +39,7 @@ router.delete('/cabins/:cabinId', deleteCabinAdmin);
 
 // Reservas
 router.get('/bookings', getAllBookingsAdmin);
+router.post('/bookings', createManualBooking);
 router.patch('/bookings/:bookingId/confirm', confirmBookingAdmin);
 router.patch('/bookings/:bookingId', updateBookingAdmin);
 

@@ -15,9 +15,9 @@ const storage = multer.diskStorage({
     cb(null, uploadsDir);
   },
   filename: (req, file, cb) => {
-    // Generar nombre único: cabin-timestamp-random.webp
+    // Generar nombre único: cabin-timestamp-random.temp (extensión temporal)
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, `cabin-${uniqueSuffix}.webp`);
+    cb(null, `cabin-${uniqueSuffix}.temp`);
   },
 });
 
@@ -44,14 +44,15 @@ export const uploadImages = multer({
 // Función para convertir imagen a WebP
 export const convertToWebP = async (filePath: string): Promise<string> => {
   try {
-    const outputPath = filePath.replace(/\.[^.]+$/, '.webp');
+    // Cambiar .temp a .webp
+    const outputPath = filePath.replace(/\.temp$/, '.webp');
     
     await sharp(filePath)
       .webp({ quality: 80 })
       .toFile(outputPath);
     
-    // Eliminar archivo original si es diferente
-    if (filePath !== outputPath && fs.existsSync(filePath)) {
+    // Eliminar archivo temporal original
+    if (fs.existsSync(filePath)) {
       fs.unlinkSync(filePath);
     }
     

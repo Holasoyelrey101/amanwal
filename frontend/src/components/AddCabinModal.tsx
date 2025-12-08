@@ -19,7 +19,6 @@ export default function AddCabinModal({ isOpen, onClose, onCabinCreated }: AddCa
     capacity: '',
     bedrooms: '',
     bathrooms: '',
-    amenities: '',
     images: '',
   });
 
@@ -99,11 +98,6 @@ export default function AddCabinModal({ isOpen, onClose, onCabinCreated }: AddCa
     setLoading(true);
 
     try {
-      const amenitiesArray = formData.amenities
-        .split(',')
-        .map((item) => item.trim())
-        .filter((item) => item !== '');
-
       await apiClient.post(
         '/admin/cabins',
         {
@@ -114,7 +108,6 @@ export default function AddCabinModal({ isOpen, onClose, onCabinCreated }: AddCa
           capacity: parseInt(formData.capacity),
           bedrooms: formData.bedrooms ? parseInt(formData.bedrooms) : undefined,
           bathrooms: formData.bathrooms ? parseInt(formData.bathrooms) : undefined,
-          amenities: amenitiesArray,
           images: imageList,
         }
       );
@@ -127,7 +120,6 @@ export default function AddCabinModal({ isOpen, onClose, onCabinCreated }: AddCa
         capacity: '',
         bedrooms: '',
         bathrooms: '',
-        amenities: '',
         images: '',
       });
       setImageList([]);
@@ -262,22 +254,9 @@ export default function AddCabinModal({ isOpen, onClose, onCabinCreated }: AddCa
             </div>
           </div>
 
-          {/* Comodidades e Imágenes */}
+          {/* Imágenes */}
           <div className="admin-form-section">
-            <h3 className="admin-form-section-title">Comodidades e Imágenes</h3>
-            <div className="admin-form-row col-md-1">
-              <div className="admin-form-group">
-                <label><FontAwesomeIcon icon={faStar} /> Comodidades</label>
-                <input
-                  type="text"
-                  name="amenities"
-                  value={formData.amenities}
-                  onChange={handleChange}
-                  placeholder="WiFi, TV, Cocina, Piscina, Aire acondicionado"
-                  className="admin-form-control"
-                />
-              </div>
-            </div>
+            <h3 className="admin-form-section-title">📸 Imágenes</h3>
 
             <div className="admin-form-group">
               <label><FontAwesomeIcon icon={faImage} /> Imágenes</label>

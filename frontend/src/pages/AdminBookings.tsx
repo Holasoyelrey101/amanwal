@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ThemeSelector } from '../components/ThemeSelector';
 import apiClient from '../api/client';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowLeft, faEye, faXmark, faTrash, faMagnifyingGlass, faCalendarAlt, faUser, faHome, faDollarSign } from '@fortawesome/free-solid-svg-icons';
+import { faArrowLeft, faEye, faXmark, faTrash, faMagnifyingGlass, faCalendarAlt, faUser, faHome, faDollarSign, faPlus } from '@fortawesome/free-solid-svg-icons';
 import './admin.css';
 import './admin-list.css';
 
@@ -28,6 +28,21 @@ interface Booking {
   createdAt: string;
 }
 
+interface User {
+  id: string;
+  name: string;
+  email: string;
+}
+
+interface ManualBookingForm {
+  userId: string;
+  cabinId: string;
+  checkIn: string;
+  checkOut: string;
+  totalPrice: string;
+  status: 'pending' | 'confirmed';
+}
+
 export const AdminBookings: React.FC = () => {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
@@ -37,12 +52,39 @@ export const AdminBookings: React.FC = () => {
   const [editingBooking, setEditingBooking] = useState<Booking | null>(null);
   const [cancellingBookingId, setCancellingBookingId] = useState<string | null>(null);
   const [deletingBookingId, setDeletingBookingId] = useState<string | null>(null);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [cabins, setCabins] = useState<Cabin[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
+  const [creatingBooking, setCreatingBooking] = useState(false);
+  const [createError, setCreateError] = useState('');
+  const [formData, setFormData] = useState<ManualBookingForm>({
+    userId: '',
+    cabinId: '',
+    checkIn: '',
+    checkOut: '',
+    totalPrice: '',
+    status: 'confirmed'
+  });
   const itemsPerPage = 10;
   const navigate = useNavigate();
 
   useEffect(() => {
     fetchBookings();
+    fetchCabinsAndUsers();
   }, []);
+
+  const fetchCabinsAndUsers = async () => {
+    try {
+      const [cabinsRes, usersRes] = await Promise.all([
+        apiClient.get('/admin/cabins'),
+        apiClient.get('/admin/users')
+      ]);
+      setCabins(cabinsRes.data);
+      setUsers(usersRes.data);
+    } catch (error) {
+      console.error('Error al obtener cabañas y usuarios:', error);
+    }
+  };
 
   const fetchBookings = async () => {
     try {
@@ -84,6 +126,49 @@ export const AdminBookings: React.FC = () => {
     } catch (error) {
       console.error('Error al cancelar reserva:', error);
       setCancellingBookingId(null);
+    }
+  };
+
+  const handleCreateBooking = async () => {
+    setCreateError('');
+    
+    if (!formData.userId || !formData.cabinId || !formData.checkIn || !formData.checkOut || !formData.totalPrice) {
+      setCreateError('Por favor completa todos los campos');
+      return;
+    }
+
+    // Validar que checkOut sea posterior a checkIn
+    if (new Date(formData.checkOut) <= new Date(formData.checkIn)) {
+      setCreateError('La fecha de salida debe ser posterior a la de entrada');
+      return;
+    }
+
+    setCreatingBooking(true);
+    try {
+      const response = await apiClient.post('/admin/bookings', {
+        userId: formData.userId,
+        cabinId: formData.cabinId,
+        checkIn: new Date(formData.checkIn).toISOString(),
+        checkOut: new Date(formData.checkOut).toISOString(),
+        totalPrice: parseFloat(formData.totalPrice),
+        status: formData.status
+      });
+
+      setBookings([response.data.booking, ...bookings]);
+      setShowCreateModal(false);
+      setFormData({
+        userId: '',
+        cabinId: '',
+        checkIn: '',
+        checkOut: '',
+        totalPrice: '',
+        status: 'confirmed'
+      });
+    } catch (error: any) {
+      console.error('Error al crear reserva:', error);
+      setCreateError(error.response?.data?.error || 'Error al crear la reserva');
+    } finally {
+      setCreatingBooking(false);
     }
   };
 
@@ -131,9 +216,14 @@ export const AdminBookings: React.FC = () => {
             <h1><FontAwesomeIcon icon={faCalendarAlt} style={{ marginRight: '12px' }} />Gestión de Reservas</h1>
             <p>Administra todas las reservas del sistema</p>
           </div>
-          <button className="admin-btn secondary" onClick={() => navigate('/admin')}>
-            <FontAwesomeIcon icon={faArrowLeft} /> Volver
-          </button>
+          <div style={{ display: 'flex', gap: '12px' }}>
+            <button className="admin-btn primary" onClick={() => setShowCreateModal(true)}>
+              <FontAwesomeIcon icon={faPlus} /> Agregar Reserva
+            </button>
+            <button className="admin-btn secondary" onClick={() => navigate('/admin')}>
+              <FontAwesomeIcon icon={faArrowLeft} /> Volver
+            </button>
+          </div>
         </div>
 
         {/* Search and Filter Section */}
@@ -383,6 +473,131 @@ export const AdminBookings: React.FC = () => {
                 </button>
                 <button className="admin-btn danger" onClick={confirmDelete}>
                   Confirmar Eliminación
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Create Manual Booking Modal */}
+        {showCreateModal && (
+          <div className="admin-list-modal-overlay" onClick={() => setShowCreateModal(false)}>
+            <div className="admin-list-modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '600px' }}>
+              <div className="admin-list-modal-header">
+                <h2 className="admin-list-modal-title">➕ Crear Reserva Manual</h2>
+                <button className="admin-list-modal-close" onClick={() => setShowCreateModal(false)}>×</button>
+              </div>
+              
+              <div className="admin-list-modal-body">
+                {createError && (
+                  <div style={{
+                    background: 'rgba(239, 68, 68, 0.1)',
+                    border: '1px solid #ef4444',
+                    color: '#ef4444',
+                    padding: '12px',
+                    borderRadius: '6px',
+                    marginBottom: '16px',
+                    fontSize: '14px'
+                  }}>
+                    ⚠️ {createError}
+                  </div>
+                )}
+                
+                <div style={{ display: 'grid', gap: '16px' }}>
+                  <div>
+                    <label>👤 Usuario *</label>
+                    <select
+                      value={formData.userId}
+                      onChange={(e) => setFormData({ ...formData, userId: e.target.value })}
+                      className="admin-form-control"
+                    >
+                      <option value="">Seleccionar usuario...</option>
+                      {users.map(user => (
+                        <option key={user.id} value={user.id}>
+                          {user.name} ({user.email})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label>🏠 Cabaña *</label>
+                    <select
+                      value={formData.cabinId}
+                      onChange={(e) => setFormData({ ...formData, cabinId: e.target.value })}
+                      className="admin-form-control"
+                    >
+                      <option value="">Seleccionar cabaña...</option>
+                      {cabins.map(cabin => (
+                        <option key={cabin.id} value={cabin.id}>
+                          {cabin.title}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                    <div>
+                      <label>📍 Check-in *</label>
+                      <input
+                        type="date"
+                        value={formData.checkIn}
+                        onChange={(e) => setFormData({ ...formData, checkIn: e.target.value })}
+                        className="admin-form-control"
+                      />
+                    </div>
+                    <div>
+                      <label>📍 Check-out *</label>
+                      <input
+                        type="date"
+                        value={formData.checkOut}
+                        onChange={(e) => setFormData({ ...formData, checkOut: e.target.value })}
+                        className="admin-form-control"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label>💰 Precio Total (CLP) *</label>
+                    <input
+                      type="number"
+                      value={formData.totalPrice}
+                      onChange={(e) => setFormData({ ...formData, totalPrice: e.target.value })}
+                      placeholder="0"
+                      className="admin-form-control"
+                      min="0"
+                      step="1000"
+                    />
+                  </div>
+
+                  <div>
+                    <label>📊 Estado *</label>
+                    <select
+                      value={formData.status}
+                      onChange={(e) => setFormData({ ...formData, status: e.target.value as 'pending' | 'confirmed' })}
+                      className="admin-form-control"
+                    >
+                      <option value="pending">⏳ Pendiente</option>
+                      <option value="confirmed">✅ Confirmada</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div className="admin-list-modal-footer">
+                <button 
+                  className="admin-btn secondary" 
+                  onClick={() => setShowCreateModal(false)}
+                  disabled={creatingBooking}
+                >
+                  Cancelar
+                </button>
+                <button 
+                  className="admin-btn primary" 
+                  onClick={handleCreateBooking}
+                  disabled={creatingBooking}
+                >
+                  {creatingBooking ? '⏳ Creando...' : '✅ Crear Reserva'}
                 </button>
               </div>
             </div>

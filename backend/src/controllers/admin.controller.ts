@@ -354,3 +354,89 @@ export const updateBookingAdmin = async (req: AuthRequest, res: Response): Promi
     res.status(500).json({ error: 'Error al actualizar reserva' });
   }
 };
+
+export const createManualBooking = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { userId, cabinId, checkIn, checkOut, totalPrice, status = 'confirmed' } = req.body;
+
+    // Validar campos requeridos
+    if (!userId || !cabinId || !checkIn || !checkOut || totalPrice === undefined) {
+      res.status(400).json({ error: 'Campos requeridos: userId, cabinId, checkIn, checkOut, totalPrice' });
+      return;
+    }
+
+    // Verificar que la cabaña existe
+    const cabin = await prisma.cabin.findUnique({ where: { id: cabinId } });
+    if (!cabin) {
+      res.status(404).json({ error: 'Cabaña no encontrada' });
+      return;
+    }
+
+    // Verificar que el usuario existe
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      res.status(404).json({ error: 'Usuario no encontrado' });
+      return;
+    }
+
+    const checkInDate = new Date(checkIn);
+    const checkOutDate = new Date(checkOut);
+
+    // Validar fechas
+    if (checkInDate >= checkOutDate) {
+      res.status(400).json({ error: 'La fecha de salida debe ser posterior a la de entrada' });
+      return;
+    }
+
+    // Verificar disponibilidad
+    const conflictingBooking = await prisma.booking.findFirst({
+      where: {
+        cabinId,
+        status: { not: 'cancelled' },
+        OR: [
+          {
+            AND: [
+              { checkIn: { lt: checkOutDate } },
+              { checkOut: { gt: checkInDate } }
+            ]
+          }
+        ]
+      }
+    });
+
+    if (conflictingBooking) {
+      res.status(400).json({ error: 'Estas fechas no están disponibles para esta cabaña' });
+      return;
+    }
+
+    // Generar número de reserva
+    const randomNum = Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
+    const bookingNumber = `RES-${randomNum}`;
+
+    // Crear la reserva
+    const booking = await prisma.booking.create({
+      data: {
+        bookingNumber,
+        cabinId,
+        userId,
+        checkIn: checkInDate,
+        checkOut: checkOutDate,
+        totalPrice: parseFloat(totalPrice),
+        status: status as 'pending' | 'confirmed' | 'cancelled' | 'completed',
+        paymentStatus: 'completed'
+      },
+      include: {
+        cabin: { select: { title: true, location: true } },
+        user: { select: { id: true, name: true, email: true } }
+      }
+    });
+
+    res.status(201).json({ 
+      message: 'Reserva creada exitosamente', 
+      booking 
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error al crear reserva manual' });
+  }
+};
