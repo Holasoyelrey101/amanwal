@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faHome, faMapPin, faDollarSign, faUsers, faBed, faBath, faStar, faImage } from '@fortawesome/free-solid-svg-icons';
+import { faHome, faMapPin, faDollarSign, faUsers, faBed, faBath, faStar, faImage, faCheck } from '@fortawesome/free-solid-svg-icons';
 import apiClient from '../api/client';
 import './add-cabin-modal.css';
 
@@ -26,6 +26,7 @@ export default function AddCabinModal({ isOpen, onClose, onCabinCreated }: AddCa
   const [newImageUrl, setNewImageUrl] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -125,8 +126,12 @@ export default function AddCabinModal({ isOpen, onClose, onCabinCreated }: AddCa
       setImageList([]);
       setNewImageUrl('');
 
-      onCabinCreated();
-      onClose();
+      setSuccess(true);
+      setTimeout(() => {
+        setSuccess(false);
+        onCabinCreated();
+        onClose();
+      }, 2000);
     } catch (err: any) {
       setError(err.response?.data?.error || 'Error al crear la cabaña');
     } finally {
@@ -146,6 +151,13 @@ export default function AddCabinModal({ isOpen, onClose, onCabinCreated }: AddCa
 
         <form onSubmit={handleSubmit} className="admin-form">
           {error && <div className="alert alert-danger">{error}</div>}
+          
+          {success && (
+            <div className="cabin-modal-success">
+              <FontAwesomeIcon icon={faCheck} />
+              <p>¡Cabaña creada exitosamente!</p>
+            </div>
+          )}
 
           {/* Información Básica */}
           <div className="admin-form-section">

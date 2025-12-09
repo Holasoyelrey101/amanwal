@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faHome, faMapPin, faDollarSign, faUsers, faBed, faBath, faStar, faImage } from '@fortawesome/free-solid-svg-icons';
+import { faHome, faMapPin, faDollarSign, faUsers, faBed, faBath, faStar, faImage, faCheck } from '@fortawesome/free-solid-svg-icons';
 import apiClient from '../api/client';
 import './add-cabin-modal.css';
 
@@ -39,6 +39,7 @@ export const EditCabinModal: React.FC<EditCabinModalProps> = ({
   const [imageList, setImageList] = useState<string[]>([]);
   const [newImageUrl, setNewImageUrl] = useState('');
   const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
 
   useEffect(() => {
     if (cabin && isOpen) {
@@ -147,9 +148,12 @@ export const EditCabinModal: React.FC<EditCabinModalProps> = ({
       };
 
       await apiClient.put(`/admin/cabins/${cabin?.id}`, updateData);
-      alert('Cabaña actualizada exitosamente');
-      onCabinUpdated();
-      onClose();
+      setSuccess(true);
+      setTimeout(() => {
+        setSuccess(false);
+        onCabinUpdated();
+        onClose();
+      }, 2000);
     } catch (error) {
       console.error('Error al actualizar cabaña:', error);
       alert('Error al actualizar cabaña');
@@ -169,6 +173,14 @@ export const EditCabinModal: React.FC<EditCabinModalProps> = ({
         </div>
 
         <form onSubmit={handleSubmit} className="admin-form">
+          {/* Success Message */}
+          {success && (
+            <div className="cabin-modal-success">
+              <FontAwesomeIcon icon={faCheck} />
+              <p>¡Cabaña actualizada exitosamente!</p>
+            </div>
+          )}
+
           {/* Información Básica */}
           <div className="admin-form-section">
             <h3 className="admin-form-section-title">Información Básica</h3>

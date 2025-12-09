@@ -1077,3 +1077,40 @@ div.modal-overlay div.modal-content .modal-footer .btn-secondary:hover:not(:disa
   color: #ffffff !important;
   box-shadow: 0 0 0 6px rgba(59, 130, 246, 0.15) !important;
 }
+
+/* Success toast para modales de cabañas */
+.cabin-modal-success {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.2) 0%, rgba(34, 197, 94, 0.05) 100%);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  border-radius: 12px;
+  padding: 15px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  animation: slideInDown 0.4s ease;
+}
+
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.cabin-modal-success svg {
+  color: #22c55e;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.cabin-modal-success p {
+  margin: 0;
+  color: #22c55e;
+  font-size: 13px;
+  font-weight: 600;
+}
