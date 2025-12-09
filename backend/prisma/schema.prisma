@@ -63,11 +63,12 @@ model Booking {
   checkIn       DateTime
   checkOut      DateTime
   totalPrice    Float
-  status        String   @default("pending")
+  status        String   @default("pending") // pending, confirmed, cancelled, completed
   paymentToken  String?
   flowOrder     Int?
-  paymentStatus String   @default("pending")
+  paymentStatus String   @default("pending") // pending, completed, failed
   paymentDate   DateTime?
+  paymentExpiresAt DateTime? // Expira después de 5 minutos
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 }

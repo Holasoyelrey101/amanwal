@@ -13,6 +13,7 @@ import paymentRoutes from './routes/payment.routes';
 import supportRoutes from './routes/support.routes';
 import uploadRoutes from './routes/upload.routes';
 import { apiRateLimiter } from './middleware/rateLimiter.middleware';
+import { startExpiredBookingCleanup } from './services/expiredBookingCleanup';
 
 dotenv.config();
 
@@ -59,6 +60,9 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
 if (process.env.NODE_ENV !== 'test') {
   app.listen(PORT, () => {
     console.log(`🚀 Server running on http://localhost:${PORT}`);
+    
+    // Iniciar limpieza automática de reservas vencidas
+    startExpiredBookingCleanup();
   });
 }
 

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import apiClient from '../api/client';
 import './my-bookings.css';
 
@@ -17,21 +18,44 @@ interface Booking {
   checkOut: string;
   totalPrice: number;
   status: string;
+  paymentExpiresAt?: string; // Nuevo campo
   cabin: Cabin;
 }
 
 export const MyBookings: React.FC = () => {
   const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [filterStatus, setFilterStatus] = useState<string>('all');
+  const [paymentTimers, setPaymentTimers] = useState<Record<string, number>>({}); // Para timers de expiración
 
   useEffect(() => {
     if (isAuthenticated) {
       loadBookings();
     }
   }, [isAuthenticated]);
+
+  // Efecto para actualizar timers de expiración cada segundo
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const newTimers: Record<string, number> = {};
+      const now = new Date().getTime();
+
+      bookings.forEach((booking) => {
+        if (booking.paymentExpiresAt && booking.status === 'pending') {
+          const expiresAt = new Date(booking.paymentExpiresAt).getTime();
+          const timeLeft = Math.max(0, Math.floor((expiresAt - now) / 1000));
+          newTimers[booking.id] = timeLeft;
+        }
+      });
+
+      setPaymentTimers(newTimers);
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [bookings]);
 
   const loadBookings = async () => {
     try {
@@ -64,6 +88,37 @@ export const MyBookings: React.FC = () => {
       console.error('Error al cancelar reserva:', err);
       alert('Error al cancelar la reserva');
     }
+  };
+
+  const initiatePayment = async (bookingId: string) => {
+    try {
+      const response = await apiClient.patch(
+        `/bookings/${bookingId}/initiate-payment`,
+        {}
+      );
+      
+      // Actualizar la reserva con la expiración
+      setBookings(bookings.map(b => 
+        b.id === bookingId 
+          ? { ...b, paymentExpiresAt: response.data.booking.paymentExpiresAt }
+          : b
+      ));
+
+      // Mostrar alerta de éxito
+      alert('Tienes 5 minutos para completar el pago. Si expira, la reserva se cancelará automáticamente.');
+      
+      // Redirigir a página de pago
+      navigate(`/payment?bookingId=${bookingId}`);
+    } catch (err: any) {
+      console.error('Error al iniciar pago:', err);
+      alert(err.response?.data?.error || 'Error al iniciar el pago');
+    }
+  };
+
+  const formatTimeRemaining = (seconds: number): string => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
   const parseImages = (images: any): string[] => {
@@ -258,6 +313,26 @@ export const MyBookings: React.FC = () => {
                         <i className="fa fa-eye"></i>
                         Ver Cabaña
                       </a>
+                      {booking.status === 'pending' && (
+                        <button
+                          className={`btn-action btn-success ${paymentTimers[booking.id] ? '' : 'disabled'}`}
+                          onClick={() => initiatePayment(booking.id)}
+                          disabled={!paymentTimers[booking.id]}
+                          title={paymentTimers[booking.id] ? 'Haz click para pagar' : 'Tiempo de pago expirado'}
+                        >
+                          <i className="fa fa-credit-card"></i>
+                          {paymentTimers[booking.id] ? (
+                            <>
+                              Ir a Pagar
+                              <span className="payment-timer">
+                                {formatTimeRemaining(paymentTimers[booking.id])}
+                              </span>
+                            </>
+                          ) : (
+                            'Pago Expirado'
+                          )}
+                        </button>
+                      )}
                       {booking.status !== 'cancelled' && (
                         <button
                           className="btn-action btn-danger"

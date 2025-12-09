@@ -327,3 +327,68 @@ export const confirmUserBooking = async (req: AuthRequest, res: Response): Promi
     res.status(500).json({ error: 'Error al confirmar reserva' });
   }
 };
+
+/**
+ * Inicia el proceso de pago para una reserva
+ * Establece la expiración a 5 minutos
+ * GET /api/bookings/:id/initiate-payment
+ */
+export const initiatePayment = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const userId = req.user?.id;
+    const { id } = req.params;
+
+    if (!userId) {
+      res.status(401).json({ error: 'Usuario no autenticado' });
+      return;
+    }
+
+    const booking = await prisma.booking.findUnique({ where: { id } });
+
+    if (!booking) {
+      res.status(404).json({ error: 'Reserva no encontrada' });
+      return;
+    }
+
+    // Verificar que sea del usuario
+    if (booking.userId !== userId) {
+      res.status(403).json({ error: 'No tienes permisos para pagar esta reserva' });
+      return;
+    }
+
+    // Solo se puede pagar si está pendiente
+    if (booking.status !== 'pending') {
+      res.status(400).json({ error: 'Esta reserva no está disponible para pagar' });
+      return;
+    }
+
+    // Establecer expiración a 5 minutos desde ahora
+    const paymentExpiresAt = new Date(Date.now() + 5 * 60 * 1000);
+
+    const updatedBooking = await prisma.booking.update({
+      where: { id },
+      data: {
+        paymentExpiresAt,
+      },
+      include: {
+        cabin: {
+          select: {
+            id: true,
+            title: true,
+            price: true,
+          },
+        },
+      },
+    });
+
+    res.json({
+      message: 'Pago iniciado. Tienes 5 minutos para completar el pago.',
+      booking: updatedBooking,
+      expiresAt: paymentExpiresAt,
+      expiresIn: 300, // 5 minutos en segundos
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error al iniciar el pago' });
+  }
+};
