@@ -8,7 +8,7 @@ const router = Router();
 /**
  * POST /admin/upload-images
  * Subir múltiples imágenes y obtener sus URLs
- * Acepta FormData con array de archivos
+ * Acepta FormData con array de archivos (máximo 10)
  */
 router.post('/upload-images', uploadImages.array('images', 50), async (req: Request, res: Response) => {
   try {
@@ -17,6 +17,22 @@ router.post('/upload-images', uploadImages.array('images', 50), async (req: Requ
     }
 
     const uploadedFiles = req.files as Express.Multer.File[];
+
+    // Validar límite de 10 archivos
+    if (uploadedFiles.length > 10) {
+      // Limpiar archivos rechazados
+      uploadedFiles.forEach((file) => {
+        try {
+          fs.unlinkSync(file.path);
+        } catch (err) {
+          // Ignorar errores al limpiar
+        }
+      });
+      return res.status(400).json({ 
+        error: 'Máximo 10 imágenes por upload. Por favor, intenta nuevamente con menos archivos.' 
+      });
+    }
+
     const imageUrls: string[] = [];
     const errors: string[] = [];
 
