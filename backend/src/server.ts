@@ -12,6 +12,7 @@ import setupRoutes from './routes/setup.routes';
 import paymentRoutes from './routes/payment.routes';
 import supportRoutes from './routes/support.routes';
 import uploadRoutes from './routes/upload.routes';
+import { apiRateLimiter } from './middleware/rateLimiter.middleware';
 
 dotenv.config();
 
@@ -24,6 +25,9 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json({ limit: '100mb' }));
 app.use(express.urlencoded({ extended: true, limit: '100mb' }));
+
+// Aplicar rate limiter a todas las rutas API
+app.use('/api/', apiRateLimiter);
 
 // Servir archivos estáticos (imágenes subidas)
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
