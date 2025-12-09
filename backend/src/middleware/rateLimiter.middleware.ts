@@ -1,4 +1,4 @@
-import rateLimit from 'express-rate-limit';
+import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 
 /**
  * Rate limiter para login - máximo 5 intentos por IP cada 15 minutos
@@ -12,12 +12,13 @@ export const loginRateLimiter = rateLimit({
   legacyHeaders: false, // deshabilita `X-RateLimit-*` headers
   skip: (req) => {
     // Permitir requests desde localhost en desarrollo
-    return process.env.NODE_ENV === 'development' && req.ip === '::1';
+    return process.env.NODE_ENV === 'development' && (req.ip === '::1' || req.ip === '127.0.0.1');
   },
   keyGenerator: (req) => {
-    // Generar clave basada en IP y email para ser más específico
+    // Usar ipKeyGenerator helper para soportar IPv6 correctamente
     const email = (req.body?.email || '').toLowerCase();
-    return `${req.ip}-${email}`;
+    const ipKey = ipKeyGenerator(req);
+    return `${ipKey}-${email}`;
   },
   handler: (req, res) => {
     res.status(429).json({
