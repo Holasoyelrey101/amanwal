@@ -873,45 +873,46 @@ div.modal-overlay div.modal-content .modal-footer .btn-secondary:hover:not(:disa
 /* Media query específica para 1366px (resolución común) */
 @media (max-width: 1366px) and (min-width: 1025px) {
   .admin-list-modal-content {
-    max-width: 85%;
-    max-height: 82vh;
+    max-width: 88%;
+    max-height: 90vh;
+    overflow-y: auto;
   }
 
   .admin-form {
-    padding: 20px;
+    padding: 22px;
   }
 
   .admin-form-section {
-    padding: 16px !important;
-    margin-bottom: 14px !important;
+    padding: 18px !important;
+    margin-bottom: 16px !important;
   }
 
   .admin-form-section-title {
-    font-size: 0.8rem !important;
+    font-size: 0.82rem !important;
     margin-bottom: 16px !important;
   }
 
   .admin-form-row {
-    gap: 16px;
+    gap: 18px;
   }
 
   .admin-form-group label {
-    font-size: 0.85rem;
-    margin-bottom: 8px;
+    font-size: 0.88rem;
+    margin-bottom: 9px;
   }
 
   .admin-form-control {
-    padding: 11px 13px !important;
-    font-size: 0.85rem !important;
+    padding: 12px 14px !important;
+    font-size: 0.88rem !important;
   }
 
   .admin-btn {
-    padding: 11px 20px;
-    font-size: 0.85rem;
+    padding: 12px 22px;
+    font-size: 0.88rem;
   }
 
   .admin-list-modal-footer {
-    padding: 16px 20px;
+    padding: 18px 22px;
     gap: 12px;
   }
 }
