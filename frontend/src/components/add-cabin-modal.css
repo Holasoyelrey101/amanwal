@@ -826,6 +826,96 @@ div.modal-overlay div.modal-content .modal-footer .btn-secondary:hover:not(:disa
   font-weight: 500;
 }
 
+/* Media query para resoluciones intermedias (tablets y desktops pequeños) */
+@media (max-width: 1400px) and (min-width: 769px) {
+  .admin-list-modal-content {
+    max-width: 90%;
+    max-height: 85vh;
+  }
+
+  .admin-list-modal-header {
+    padding: 20px 24px;
+  }
+
+  .admin-form {
+    padding: 24px;
+  }
+
+  .admin-form-section {
+    padding: 18px !important;
+    margin-bottom: 16px !important;
+  }
+
+  .admin-form-row {
+    gap: 18px;
+  }
+
+  .admin-form-group label {
+    font-size: 0.9rem;
+    margin-bottom: 10px;
+  }
+
+  .admin-form-control {
+    padding: 12px 14px !important;
+    font-size: 0.9rem !important;
+  }
+
+  .admin-btn {
+    padding: 12px 24px;
+    font-size: 0.9rem;
+  }
+
+  .admin-list-modal-footer {
+    padding: 20px 24px;
+  }
+}
+
+/* Media query específica para 1366px (resolución común) */
+@media (max-width: 1366px) and (min-width: 1025px) {
+  .admin-list-modal-content {
+    max-width: 85%;
+    max-height: 82vh;
+  }
+
+  .admin-form {
+    padding: 20px;
+  }
+
+  .admin-form-section {
+    padding: 16px !important;
+    margin-bottom: 14px !important;
+  }
+
+  .admin-form-section-title {
+    font-size: 0.8rem !important;
+    margin-bottom: 16px !important;
+  }
+
+  .admin-form-row {
+    gap: 16px;
+  }
+
+  .admin-form-group label {
+    font-size: 0.85rem;
+    margin-bottom: 8px;
+  }
+
+  .admin-form-control {
+    padding: 11px 13px !important;
+    font-size: 0.85rem !important;
+  }
+
+  .admin-btn {
+    padding: 11px 20px;
+    font-size: 0.85rem;
+  }
+
+  .admin-list-modal-footer {
+    padding: 16px 20px;
+    gap: 12px;
+  }
+}
+
 @media (max-width: 768px) {
   .modal-content {
     width: 95%;
