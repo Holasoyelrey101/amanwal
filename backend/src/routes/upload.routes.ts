@@ -20,22 +20,33 @@ router.post('/upload-images', uploadImages.array('images', 10), async (req: Requ
     const imageUrls: string[] = [];
     const errors: string[] = [];
 
-    // Procesar cada archivo
-    for (const file of uploadedFiles) {
+    // Procesar archivos en paralelo para mejor rendimiento
+    const processingPromises = uploadedFiles.map(async (file) => {
       try {
         // Convertir a WebP
         const webpPath = await convertToWebP(file.path);
         const fileName = path.basename(webpPath);
         const imageUrl = getImageUrl(fileName);
-        imageUrls.push(imageUrl);
+        return { success: true, imageUrl };
       } catch (error) {
         errors.push(`Error procesando ${file.originalname}: ${error}`);
         // Intentar limpiar archivo fallido
         if (fs.existsSync(file.path)) {
           fs.unlinkSync(file.path);
         }
+        return { success: false };
       }
-    }
+    });
+
+    // Esperar a que todas las promesas se completen (incluso si algunas fallan)
+    const results = await Promise.allSettled(processingPromises);
+    
+    // Extraer URLs exitosas
+    results.forEach((result) => {
+      if (result.status === 'fulfilled' && result.value.success) {
+        imageUrls.push(result.value.imageUrl);
+      }
+    });
 
     if (imageUrls.length === 0) {
       return res.status(500).json({ error: 'No se pudieron procesar los archivos', details: errors });
