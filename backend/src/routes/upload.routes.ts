@@ -10,7 +10,7 @@ const router = Router();
  * Subir múltiples imágenes y obtener sus URLs
  * Acepta FormData con array de archivos
  */
-router.post('/upload-images', uploadImages.array('images', 10), async (req: Request, res: Response) => {
+router.post('/upload-images', uploadImages.array('images', 50), async (req: Request, res: Response) => {
   try {
     if (!req.files || req.files.length === 0) {
       return res.status(400).json({ error: 'No se proporcionaron archivos' });
