@@ -209,6 +209,13 @@ div.modal-overlay div.modal-content {
   border-radius: 16px 16px 0 0;
 }
 
+.admin-list-modal-body {
+  padding: 32px 40px;
+  flex: 1;
+  overflow-y: auto;
+  background: linear-gradient(135deg, #0f172a 0%, #1a1a2e 100%);
+}
+
 .modal-header h3,
 .modal-header h2 {
   margin: 0;

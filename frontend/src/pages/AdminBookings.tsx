@@ -482,7 +482,7 @@ export const AdminBookings: React.FC = () => {
         {/* Create Manual Booking Modal */}
         {showCreateModal && (
           <div className="admin-list-modal-overlay" onClick={() => setShowCreateModal(false)}>
-            <div className="admin-list-modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '600px' }}>
+            <div className="admin-list-modal-content" onClick={(e) => e.stopPropagation()}>
               <div className="admin-list-modal-header">
                 <h2 className="admin-list-modal-title">➕ Crear Reserva Manual</h2>
                 <button className="admin-list-modal-close" onClick={() => setShowCreateModal(false)}>×</button>
