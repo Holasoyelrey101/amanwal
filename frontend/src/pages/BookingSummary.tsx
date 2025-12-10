@@ -28,7 +28,7 @@ export const BookingSummary: React.FC = () => {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const response = await apiClient.get('/auth/me');
+        const response = await apiClient.get('/auth/profile');
         setUser(response.data);
       } catch (err) {
         console.error('Error cargando datos del usuario:', err);
