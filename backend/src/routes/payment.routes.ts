@@ -14,14 +14,18 @@ const prisma = new PrismaClient();
  */
 router.post('/create', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
+    console.log('📥 POST /api/payments/create - Iniciado');
     const { bookingId } = req.body;
     const userId = req.user?.id;
+
+    console.log('📊 Datos recibidos:', { bookingId, userId });
 
     if (!bookingId) {
       return res.status(400).json({ error: 'bookingId es requerido' });
     }
 
     // Obtener detalles de la reserva
+    console.log('🔍 Buscando reserva:', bookingId);
     const booking = await prisma.booking.findUnique({
       where: { id: bookingId },
       include: {
@@ -31,11 +35,15 @@ router.post('/create', authMiddleware, async (req: AuthRequest, res: Response) =
     });
 
     if (!booking) {
+      console.log('❌ Reserva no encontrada');
       return res.status(404).json({ error: 'Reserva no encontrada' });
     }
 
+    console.log('✅ Reserva encontrada:', booking.bookingNumber);
+
     // Verificar que la reserva pertenece al usuario
     if (booking.userId !== userId) {
+      console.log('❌ Usuario no autorizado');
       return res.status(403).json({ error: 'No autorizado' });
     }
 
@@ -44,6 +52,12 @@ router.post('/create', authMiddleware, async (req: AuthRequest, res: Response) =
     
     // La URL de retorno debe ser el backend, que luego redirige al frontend
     const returnUrl = `${process.env.BACKEND_URL || 'http://localhost:3000'}/api/payments/return/${bookingId}`;
+
+    console.log('💳 Creando orden en Flow con:');
+    console.log('   - commerceOrder:', booking.bookingNumber);
+    console.log('   - amount:', booking.totalPrice);
+    console.log('   - email:', booking.user.email);
+    console.log('   - returnUrl:', returnUrl);
 
     const paymentResponse = await flowService.createPayment({
       commerceOrder: booking.bookingNumber,
@@ -55,7 +69,10 @@ router.post('/create', authMiddleware, async (req: AuthRequest, res: Response) =
       urlReturn: returnUrl,
     });
 
+    console.log('✅ Orden de Flow creada:', { token: paymentResponse.token, flowOrder: paymentResponse.flowOrder });
+
     // Guardar token de Flow en la reserva para después
+    console.log('💾 Guardando token en BD...');
     await prisma.booking.update({
       where: { id: bookingId },
       data: {
@@ -64,10 +81,12 @@ router.post('/create', authMiddleware, async (req: AuthRequest, res: Response) =
       },
     });
 
+    console.log('✅ Token guardado en BD');
+
     // Construir URL de redirección
     const redirectUrl = flowService.buildRedirectUrl(paymentResponse);
 
-    console.log(`💳 Reserva ${booking.bookingNumber} lista para pago`);
+    console.log(`💳 Reserva ${booking.bookingNumber} lista para pago - Enviando URL:`, redirectUrl);
 
     res.json({
       success: true,
@@ -76,7 +95,8 @@ router.post('/create', authMiddleware, async (req: AuthRequest, res: Response) =
       flowOrder: paymentResponse.flowOrder,
     });
   } catch (error) {
-    console.error('Error al crear pago:', error);
+    console.error('❌ Error al crear pago:', error);
+    console.error('   Stack:', error instanceof Error ? error.stack : 'N/A');
     res.status(500).json({
       error: 'Error al procesar pago',
       details: error instanceof Error ? error.message : String(error),
