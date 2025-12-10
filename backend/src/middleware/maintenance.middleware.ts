@@ -18,7 +18,7 @@ export const maintenanceMiddleware = (
 ) => {
   // Rutas que siempre deben estar disponibles
   const allowedRoutes = [
-    '/api/admin/maintenance',
+    '/api/maintenance',
     '/api/health',
     '/maintenance.html',
   ];
