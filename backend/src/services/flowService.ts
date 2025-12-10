@@ -80,10 +80,70 @@ class FlowService {
   }
 
   /**
+   * Valida que un email sea real (no ficticio)
+   * Flow solo acepta emails de proveedores públicos reales
+   * 
+   * Rechaza:
+   * - Dominios locales (localhost, test.com, example.com, etc.)
+   * - Dominios corporativos/custom sin registro público (amanwal.cl, etc.)
+   * - Formatos inválidos
+   * 
+   * Acepta: Cualquier email de proveedores públicos reales (Gmail, Hotmail, Yahoo, etc.)
+   */
+  private isValidEmail(email: string): boolean {
+    // Dominios que DEFINITIVAMENTE no acepta Flow (locales/test)
+    const invalidDomains = new Set([
+      'localhost',
+      'test.com',
+      'example.com',
+      'test.local',
+      '127.0.0.1',
+      'invalid',
+      'example.org',
+      'example.net',
+      'localhost.localdomain',
+    ]);
+    
+    // Extraer dominio del email
+    const emailRegex = /^[^\s@]+@([^\s@]+)$/;
+    const match = email.match(emailRegex);
+    
+    if (!match) {
+      return false; // Email format inválido
+    }
+    
+    const domain = match[1].toLowerCase();
+    
+    // Rechazar dominios inválidos conocidos
+    if (invalidDomains.has(domain)) {
+      return false;
+    }
+    
+    // Rechazar dominios sin TLD válido (ej: "localhost", "test", "amanwal")
+    if (!domain.includes('.') || domain.endsWith('.')) {
+      return false;
+    }
+    
+    // Rechazar dominios con solo caracteres numéricos (ej: "123.456.789")
+    if (/^\d+(\.\d+)*$/.test(domain)) {
+      return false;
+    }
+    
+    // Si pasó todos los checks, es un email válido para Flow
+    // (Gmail, Hotmail, Yahoo, otros proveedores públicos, etc.)
+    return true;
+  }
+
+  /**
    * Crea una orden de pago en Flow
    */
   async createPayment(paymentData: FlowPaymentParams): Promise<FlowPaymentResponse> {
     try {
+      // Validar email antes de enviar a Flow
+      if (!this.isValidEmail(paymentData.email)) {
+        throw new Error(`Email no válido para Flow: ${paymentData.email}. Por favor use un email real (Gmail, Hotmail, etc.)`);
+      }
+
       // Parámetros ORDENADOS ALFABÉTICAMENTE (SIN signature 's')
       // Según Flow: "Se deben firmar todos los parámetros menos el parámetro s"
       const amount = Math.round(paymentData.amount);
