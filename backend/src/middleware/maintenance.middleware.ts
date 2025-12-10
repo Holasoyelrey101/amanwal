@@ -95,19 +95,6 @@ export const maintenanceMiddleware = (
       </html>
     `);
   }
-          h1 { font-size: 48px; margin-bottom: 20px; }
-          p { font-size: 18px; color: rgba(255,255,255,0.7); }
-        </style>
-      </head>
-      <body>
-        <div class="container">
-          <h1>Enseguida volvemos</h1>
-          <p>Estamos realizando mantenimiento. Por favor intenta más tarde.</p>
-        </div>
-      </body>
-      </html>
-    `);
-  }
 };
 
 /**
