@@ -9,14 +9,21 @@ const router = Router();
 
 /**
  * Middleware para verificar token admin
- * Las rutas de mantenimiento NO usan auth JWT, usan un token especial en headers
+ * Acepta el token como:
+ * 1. Header: x-admin-token
+ * 2. Query parameter: ?token=...
  */
 const verifyAdminToken = (req: Request, res: Response, next: Function) => {
   const adminToken = process.env.ADMIN_MAINTENANCE_TOKEN;
-  const token = req.headers['x-admin-token'] as string;
+  
+  // Buscar el token en headers o query params
+  const tokenFromHeader = req.headers['x-admin-token'] as string;
+  const tokenFromQuery = req.query.token as string;
+  const token = tokenFromHeader || tokenFromQuery;
 
   console.log('🔐 Verificando token de mantenimiento');
-  console.log('   Token enviado:', token ? '✓ Presente' : '✗ Falta');
+  console.log('   Token en header:', tokenFromHeader ? '✓ Presente' : '✗ Falta');
+  console.log('   Token en query:', tokenFromQuery ? '✓ Presente' : '✗ Falta');
   console.log('   Token configurado:', adminToken ? '✓ Presente' : '✗ Falta');
 
   if (!adminToken) {
@@ -28,7 +35,7 @@ const verifyAdminToken = (req: Request, res: Response, next: Function) => {
   }
 
   if (!token) {
-    console.error('❌ Token no proporcionado en headers');
+    console.error('❌ Token no proporcionado en headers ni en query');
     return res.status(401).json({
       success: false,
       error: 'Token de admin no proporcionado',
