@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Panel de Mantenimiento - Amanwal</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <style>
     * {
       margin: 0;
@@ -11,24 +12,30 @@
       box-sizing: border-box;
     }
 
+    html, body {
+      height: 100%;
+      background: #000;
+      color: #fff;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
       padding: 20px;
+      min-height: 100vh;
     }
 
     .container {
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      background: linear-gradient(135deg, #1a1a1a 0%, #0d0d0d 100%);
+      border-radius: 16px;
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
       max-width: 500px;
       width: 100%;
       padding: 40px;
       animation: slideIn 0.5s ease-out;
+      border: 1px solid rgba(255, 255, 255, 0.08);
     }
 
     @keyframes slideIn {
@@ -42,16 +49,30 @@
       }
     }
 
-    h1 {
-      color: #333;
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding-bottom: 20px;
+    }
+
+    .logo {
+      font-size: 40px;
       margin-bottom: 10px;
+    }
+
+    h1 {
+      color: #fff;
+      margin-bottom: 5px;
       font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
     }
 
     .subtitle {
-      color: #666;
+      color: rgba(255, 255, 255, 0.6);
       font-size: 14px;
-      margin-bottom: 30px;
+      margin-bottom: 0;
     }
 
     .form-group {
@@ -60,28 +81,37 @@
 
     label {
       display: block;
-      color: #333;
+      color: rgba(255, 255, 255, 0.9);
       font-weight: 600;
       margin-bottom: 8px;
       font-size: 14px;
+      letter-spacing: 0.3px;
     }
 
     input[type="password"],
     textarea {
       width: 100%;
       padding: 12px 16px;
-      border: 2px solid #e0e0e0;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
       border-radius: 8px;
       font-size: 14px;
+      color: #fff;
       font-family: 'Monaco', 'Courier New', monospace;
-      transition: border-color 0.3s;
+      transition: all 0.3s ease;
+    }
+
+    input[type="password"]::placeholder,
+    textarea::placeholder {
+      color: rgba(255, 255, 255, 0.4);
     }
 
     input[type="password"]:focus,
     textarea:focus {
       outline: none;
-      border-color: #667eea;
-      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.2);
+      box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.05);
     }
 
     textarea {
@@ -101,43 +131,44 @@
       padding: 12px 24px;
       border: none;
       border-radius: 8px;
-      font-size: 14px;
-      font-weight: 600;
+      font-size: 13px;
+      font-weight: 700;
       cursor: pointer;
-      transition: all 0.3s;
+      transition: all 0.3s ease;
       text-transform: uppercase;
-      letter-spacing: 0.5px;
+      letter-spacing: 0.8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
     }
 
     .btn-enable {
-      background: #4CAF50;
+      background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
       color: white;
     }
 
     .btn-enable:hover {
-      background: #45a049;
       transform: translateY(-2px);
       box-shadow: 0 10px 20px rgba(76, 175, 80, 0.3);
     }
 
     .btn-disable {
-      background: #f44336;
+      background: linear-gradient(135deg, #f44336 0%, #da190b 100%);
       color: white;
     }
 
     .btn-disable:hover {
-      background: #da190b;
       transform: translateY(-2px);
       box-shadow: 0 10px 20px rgba(244, 67, 54, 0.3);
     }
 
     .btn-check {
-      background: #2196F3;
+      background: linear-gradient(135deg, #2196F3 0%, #0b7dda 100%);
       color: white;
     }
 
     .btn-check:hover {
-      background: #0b7dda;
       transform: translateY(-2px);
       box-shadow: 0 10px 20px rgba(33, 150, 243, 0.3);
     }
@@ -149,12 +180,13 @@
     }
 
     .status-box {
-      background: #f5f5f5;
-      border-left: 4px solid #667eea;
+      background: rgba(255, 255, 255, 0.03);
+      border-left: 4px solid rgba(255, 255, 255, 0.2);
       padding: 16px;
-      border-radius: 6px;
+      border-radius: 8px;
       margin-top: 20px;
       display: none;
+      border: 1px solid rgba(255, 255, 255, 0.08);
     }
 
     .status-box.show {
@@ -172,94 +204,104 @@
     }
 
     .status-box.success {
-      background: #f1f8e9;
+      background: rgba(76, 175, 80, 0.1);
       border-left-color: #4CAF50;
+      border-color: rgba(76, 175, 80, 0.2);
     }
 
     .status-box.success .status-title {
-      color: #2e7d32;
+      color: #66BB6A;
     }
 
     .status-box.error {
-      background: #ffebee;
+      background: rgba(244, 67, 54, 0.1);
       border-left-color: #f44336;
+      border-color: rgba(244, 67, 54, 0.2);
     }
 
     .status-box.error .status-title {
-      color: #c62828;
+      color: #EF5350;
     }
 
     .status-box.info {
-      background: #e3f2fd;
+      background: rgba(33, 150, 243, 0.1);
       border-left-color: #2196F3;
+      border-color: rgba(33, 150, 243, 0.2);
     }
 
     .status-box.info .status-title {
-      color: #1565c0;
+      color: #42A5F5;
     }
 
     .status-title {
-      font-weight: 600;
+      font-weight: 700;
       margin-bottom: 8px;
       font-size: 14px;
     }
 
     .status-message {
-      color: #555;
+      color: rgba(255, 255, 255, 0.7);
       font-size: 13px;
-      line-height: 1.5;
-      word-break: break-all;
+      line-height: 1.6;
+      word-break: break-word;
     }
 
-    .loader {
-      display: inline-block;
-      width: 4px;
-      height: 4px;
-      background: #667eea;
-      border-radius: 50%;
-      animation: pulse 1.5s infinite;
-      margin-left: 8px;
-    }
-
-    @keyframes pulse {
-      0%, 100% {
-        opacity: 1;
-      }
-      50% {
-        opacity: 0.3;
-      }
+    .status-message strong {
+      color: #fff;
     }
 
     .info-banner {
-      background: #e8f5e9;
-      border: 1px solid #81c784;
-      border-radius: 6px;
-      padding: 12px;
+      background: rgba(76, 175, 80, 0.1);
+      border: 1px solid rgba(76, 175, 80, 0.3);
+      border-radius: 8px;
+      padding: 14px;
       margin-bottom: 24px;
-      color: #2e7d32;
+      color: #81C784;
       font-size: 13px;
-      line-height: 1.5;
+      line-height: 1.6;
     }
 
     .info-banner strong {
       display: block;
-      margin-bottom: 4px;
+      margin-bottom: 6px;
+      color: #A5D6A7;
+    }
+
+    @media (max-width: 480px) {
+      .container {
+        padding: 30px 20px;
+      }
+
+      h1 {
+        font-size: 24px;
+      }
+
+      .button-group {
+        flex-direction: column;
+      }
+
+      button {
+        width: 100%;
+      }
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>🔧 Panel de Mantenimiento</h1>
-    <p class="subtitle">Amanwal - Control de modo mantenimiento</p>
+    <div class="header">
+      <div class="logo">⚙️</div>
+      <h1>Panel de Mantenimiento</h1>
+      <p class="subtitle">Amanwal - Control del sistema</p>
+    </div>
 
     <div class="info-banner">
-      <strong>ℹ️ Instrucciones:</strong>
+      <strong><i class="fas fa-info-circle"></i> Instrucciones:</strong>
       Ingresa tu token admin y selecciona una acción. El sitio mostrará la página de mantenimiento a los usuarios normales.
     </div>
 
     <form id="maintenanceForm">
       <div class="form-group">
-        <label for="token">Token Admin:</label>
+        <label for="token"><i class="fas fa-key"></i> Token Admin:</label>
         <input 
           type="password" 
           id="token" 
@@ -269,7 +311,7 @@
       </div>
 
       <div class="form-group">
-        <label for="message">Mensaje (opcional):</label>
+        <label for="message"><i class="fas fa-message"></i> Mensaje (opcional):</label>
         <textarea 
           id="message" 
           placeholder="Ej: Sistema en mantenimiento - Volvemos en 1 hora"
@@ -278,13 +320,13 @@
 
       <div class="button-group">
         <button type="button" class="btn-enable" onclick="enableMaintenance()" id="btnEnable">
-          ✓ Activar
+          <i class="fas fa-power-off"></i> Activar
         </button>
         <button type="button" class="btn-disable" onclick="disableMaintenance()" id="btnDisable">
-          ✗ Desactivar
+          <i class="fas fa-play"></i> Desactivar
         </button>
         <button type="button" class="btn-check" onclick="checkStatus()" id="btnCheck">
-          ⓘ Ver Estado
+          <i class="fas fa-circle-info"></i> Estado
         </button>
       </div>
     </form>

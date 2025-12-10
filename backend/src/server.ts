@@ -3,6 +3,7 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
 import path from 'path';
+import fs from 'fs';
 import { PrismaClient } from '@prisma/client';
 import authRoutes from './routes/auth.routes';
 import cabinRoutes from './routes/cabin.routes';
@@ -37,18 +38,7 @@ app.use('/api/', apiRateLimiter);
 // Middleware de modo mantenimiento (aplicar ANTES de las rutas)
 app.use(maintenanceMiddleware);
 
-// Servir archivos estáticos del frontend (construido con Vite)
-// con fallthrough: true para que continue al siguiente middleware si no encuentra
-app.use(express.static(path.join(__dirname, '../../frontend/dist'), {
-  maxAge: '1y',
-  etag: false,
-  fallthrough: true // ← IMPORTANTE: permite que continue al siguiente middleware
-}));
-
-// Servir archivos estáticos (imágenes subidas)
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
-
-// Routes
+// Routes API
 app.use('/api/auth', authRoutes);
 app.use('/api/cabins', cabinRoutes);
 app.use('/api/bookings', bookingRoutes);
@@ -65,15 +55,34 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date() });
 });
 
-// Middleware para SPA fallback - sirve index.html para rutas no encontradas
+// Servir archivos estáticos (imágenes subidas)
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+
+// SPA fallback middleware - ANTES de express.static
+// Esto intercepta requests y sirve index.html si no tiene extensión
 app.use((req: express.Request, res: express.Response, next: express.NextFunction) => {
-  // Si es una petición GET y no es /api, sirve index.html
-  if (req.method === 'GET' && !req.path.startsWith('/api') && !req.path.includes('.')) {
-    res.sendFile(path.join(__dirname, '../../frontend/dist/index.html'));
-  } else {
-    next();
+  // Solo para GET requests
+  if (req.method !== 'GET') {
+    return next();
   }
+  
+  // Si no tiene extensión, es probablemente una ruta SPA
+  if (!path.extname(req.path)) {
+    console.log(`🔄 SPA Fallback: ${req.path}`);
+    return res.sendFile(path.join(__dirname, '../../frontend/dist/index.html'), (err) => {
+      if (err) {
+        console.error('Error sendFile:', err.message);
+        return next();
+      }
+    });
+  }
+  
+  // Si tiene extensión, pasar al siguiente middleware (probablemente express.static)
+  next();
 });
+
+// Servir archivos estáticos del frontend
+app.use(express.static(path.join(__dirname, '../../frontend/dist')));
 
 // Error handling middleware - DEBE ir al final
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
