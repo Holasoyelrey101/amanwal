@@ -86,8 +86,10 @@ class FlowService {
     try {
       // Parámetros ORDENADOS ALFABÉTICAMENTE (SIN signature 's')
       // Según Flow: "Se deben firmar todos los parámetros menos el parámetro s"
+      const amount = Math.round(paymentData.amount);
+      
       const paramsForSignature: Record<string, any> = {
-        amount: Math.round(paymentData.amount),
+        amount: amount,
         apiKey: this.apiKey,
         commerceOrder: paymentData.commerceOrder,
         currency: paymentData.currency || 'CLP',
@@ -108,40 +110,52 @@ class FlowService {
 
       console.log('🔄 Creando orden de pago en Flow...');
       console.log('   URL:', `${this.apiUrl}/payment/create`);
+      console.log('   Monto:', amount);
       console.log('   API Key:', this.apiKey);
-      console.log('   Parámetros para firma (sin apiKey):', Object.keys(paramsForSignature).sort());
-      console.log('   Signature:', signature.substring(0, 20) + '...');
-      console.log('   Parámetros finales:', params);
+      console.log('   Parámetros para firma:', Object.keys(paramsForSignature).sort());
+      
+      // Convertir a URLSearchParams correctamente
+      const urlParams = new URLSearchParams();
+      Object.keys(params).forEach((key) => {
+        urlParams.append(key, String(params[key]));
+      });
 
-      // Hacer petición POST a Flow usando data directa (axios convierte automáticamente)
+      console.log('   Request body (URLSearchParams):');
+      const bodyStr = urlParams.toString();
+      console.log('   ' + bodyStr.substring(0, 150) + (bodyStr.length > 150 ? '...' : ''));
+      console.log('   Signature:', signature.substring(0, 20) + '...');
+
+      // Hacer petición POST a Flow
       const response = await axios.post<FlowPaymentResponse>(
         `${this.apiUrl}/payment/create`,
-        params,
+        urlParams,
         {
           headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
           },
-          transformRequest: [(data) => {
-            // Transformar el objeto a URLSearchParams manualmente
-            const params = new URLSearchParams();
-            for (const key in data) {
-              params.append(key, String(data[key]));
-            }
-            console.log('   Request body:', params.toString().substring(0, 150) + '...');
-            return params.toString();
-          }],
         }
       );
 
       console.log('✅ Orden de pago creada exitosamente');
-      console.log('FlowOrder:', response.data.flowOrder);
-      console.log('Token:', response.data.token);
+      console.log('   FlowOrder:', response.data.flowOrder);
+      console.log('   Token:', response.data.token.substring(0, 20) + '...');
+      console.log('   URL:', response.data.url);
 
       return response.data;
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        console.error('❌ Error en Flow API:', error.response?.data);
-        throw new Error(`Flow API Error: ${error.response?.data?.message || error.message}`);
+        const errorData = error.response?.data;
+        console.error('❌ Error en Flow API:');
+        console.error('   Status:', error.response?.status);
+        console.error('   Error data:', errorData);
+        
+        // Intentar extraer mensaje de error más específico
+        const errorMessage = 
+          (typeof errorData === 'object' && errorData !== null && 'message' in errorData) 
+            ? String(errorData.message)
+            : (typeof errorData === 'string' ? errorData : error.message);
+            
+        throw new Error(`Flow API Error: ${errorMessage}`);
       }
       throw error;
     }
