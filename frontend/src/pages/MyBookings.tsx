@@ -107,8 +107,8 @@ export const MyBookings: React.FC = () => {
       // Mostrar alerta de éxito
       alert('Tienes 5 minutos para completar el pago. Si expira, la reserva se cancelará automáticamente.');
       
-      // Redirigir a página de pago
-      navigate(`/payment?bookingId=${bookingId}`);
+      // Redirigir a página de pago con ruta dinámica
+      navigate(`/payment/${bookingId}`);
     } catch (err: any) {
       console.error('Error al iniciar pago:', err);
       alert(err.response?.data?.error || 'Error al iniciar el pago');
