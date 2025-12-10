@@ -37,6 +37,14 @@ app.use('/api/', apiRateLimiter);
 // Middleware de modo mantenimiento (aplicar ANTES de las rutas)
 app.use(maintenanceMiddleware);
 
+// Servir archivos estáticos del frontend (construido con Vite)
+// con fallthrough: true para que continue al siguiente middleware si no encuentra
+app.use(express.static(path.join(__dirname, '../../frontend/dist'), {
+  maxAge: '1y',
+  etag: false,
+  fallthrough: true // ← IMPORTANTE: permite que continue al siguiente middleware
+}));
+
 // Servir archivos estáticos (imágenes subidas)
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
@@ -57,7 +65,17 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date() });
 });
 
-// Error handling middleware
+// Middleware para SPA fallback - sirve index.html para rutas no encontradas
+app.use((req: express.Request, res: express.Response, next: express.NextFunction) => {
+  // Si es una petición GET y no es /api, sirve index.html
+  if (req.method === 'GET' && !req.path.startsWith('/api') && !req.path.includes('.')) {
+    res.sendFile(path.join(__dirname, '../../frontend/dist/index.html'));
+  } else {
+    next();
+  }
+});
+
+// Error handling middleware - DEBE ir al final
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
   console.error(err);
   res.status(err.status || 500).json({

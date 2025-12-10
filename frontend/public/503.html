@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Página no disponible</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+      background: linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      color: white;
+    }
+
+    .container {
+      text-align: center;
+      max-width: 600px;
+    }
+
+    .icon {
+      font-size: 80px;
+      margin-bottom: 30px;
+      animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-20px); }
+    }
+
+    h1 {
+      font-size: 48px;
+      font-weight: 700;
+      letter-spacing: -1px;
+      margin-bottom: 20px;
+    }
+
+    p {
+      font-size: 18px;
+      color: #b0b0b0;
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+
+    .info-box {
+      background: rgba(100, 181, 246, 0.1);
+      border-left: 4px solid #64b5f6;
+      padding: 20px;
+      margin: 30px 0;
+      border-radius: 4px;
+      text-align: left;
+    }
+
+    .info-box strong {
+      color: #64b5f6;
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    .loader {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin: 40px 0;
+    }
+
+    .loader span {
+      width: 12px;
+      height: 12px;
+      background: #64b5f6;
+      border-radius: 50%;
+      animation: pulse 1.4s infinite;
+    }
+
+    .loader span:nth-child(2) { animation-delay: 0.2s; }
+    .loader span:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.3; transform: scale(0.8); }
+      50% { opacity: 1; transform: scale(1); }
+    }
+
+    .footer {
+      margin-top: 40px;
+      color: #666;
+      font-size: 14px;
+    }
+
+    .footer a {
+      color: #64b5f6;
+      text-decoration: none;
+    }
+
+    .footer a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="icon">🔧</div>
+    <h1>Enseguida volvemos.</h1>
+    <p>Estamos actualizando el sistema para ofrecerte una mejor experiencia.</p>
+
+    <div class="info-box">
+      <strong>⏱️ Tiempo estimado:</strong>
+      Menos de una hora. Intenta más tarde.
+    </div>
+
+    <div class="loader">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+
+    <div class="footer">
+      <p>Si tienes alguna pregunta, contacta con <a href="mailto:cabanasamanwal@gmail.com">soporte</a></p>
+    </div>
+  </div>
+</body>
+</html>
