@@ -61,7 +61,7 @@ export const maintenanceMiddleware = (
 
   // Si es una petición de HTML/página, servir maintenance.html desde backend
   console.log('🔧 Modo mantenimiento - Página de mantenimiento mostrada');
-  const maintenancePath = path.join(__dirname, '../maintenance.html');
+  const maintenancePath = path.join(__dirname, '../../maintenance.html');
   
   console.log(`📁 Buscando archivo en: ${maintenancePath}`);
   
