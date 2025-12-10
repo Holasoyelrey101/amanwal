@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel de Mantenimiento - Amanwal</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .container {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      max-width: 500px;
+      width: 100%;
+      padding: 40px;
+      animation: slideIn 0.5s ease-out;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    h1 {
+      color: #333;
+      margin-bottom: 10px;
+      font-size: 28px;
+    }
+
+    .subtitle {
+      color: #666;
+      font-size: 14px;
+      margin-bottom: 30px;
+    }
+
+    .form-group {
+      margin-bottom: 24px;
+    }
+
+    label {
+      display: block;
+      color: #333;
+      font-weight: 600;
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+
+    input[type="password"],
+    textarea {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: 'Monaco', 'Courier New', monospace;
+      transition: border-color 0.3s;
+    }
+
+    input[type="password"]:focus,
+    textarea:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 80px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 12px;
+      margin-top: 30px;
+    }
+
+    button {
+      flex: 1;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .btn-enable {
+      background: #4CAF50;
+      color: white;
+    }
+
+    .btn-enable:hover {
+      background: #45a049;
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(76, 175, 80, 0.3);
+    }
+
+    .btn-disable {
+      background: #f44336;
+      color: white;
+    }
+
+    .btn-disable:hover {
+      background: #da190b;
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(244, 67, 54, 0.3);
+    }
+
+    .btn-check {
+      background: #2196F3;
+      color: white;
+    }
+
+    .btn-check:hover {
+      background: #0b7dda;
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(33, 150, 243, 0.3);
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .status-box {
+      background: #f5f5f5;
+      border-left: 4px solid #667eea;
+      padding: 16px;
+      border-radius: 6px;
+      margin-top: 20px;
+      display: none;
+    }
+
+    .status-box.show {
+      display: block;
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+
+    .status-box.success {
+      background: #f1f8e9;
+      border-left-color: #4CAF50;
+    }
+
+    .status-box.success .status-title {
+      color: #2e7d32;
+    }
+
+    .status-box.error {
+      background: #ffebee;
+      border-left-color: #f44336;
+    }
+
+    .status-box.error .status-title {
+      color: #c62828;
+    }
+
+    .status-box.info {
+      background: #e3f2fd;
+      border-left-color: #2196F3;
+    }
+
+    .status-box.info .status-title {
+      color: #1565c0;
+    }
+
+    .status-title {
+      font-weight: 600;
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+
+    .status-message {
+      color: #555;
+      font-size: 13px;
+      line-height: 1.5;
+      word-break: break-all;
+    }
+
+    .info-banner {
+      background: #e8f5e9;
+      border: 1px solid #81c784;
+      border-radius: 6px;
+      padding: 12px;
+      margin-bottom: 24px;
+      color: #2e7d32;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .info-banner strong {
+      display: block;
+      margin-bottom: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔧 Panel de Mantenimiento</h1>
+    <p class="subtitle">Amanwal - Control de modo mantenimiento</p>
+
+    <div class="info-banner">
+      <strong>ℹ️ Instrucciones:</strong>
+      Ingresa tu token admin y selecciona una acción. El sitio mostrará la página de mantenimiento a los usuarios normales.
+    </div>
+
+    <form id="maintenanceForm">
+      <div class="form-group">
+        <label for="token">Token Admin:</label>
+        <input 
+          type="password" 
+          id="token" 
+          placeholder="Pega tu token aquí"
+          required
+        >
+      </div>
+
+      <div class="form-group">
+        <label for="message">Mensaje (opcional):</label>
+        <textarea 
+          id="message" 
+          placeholder="Ej: Sistema en mantenimiento - Volvemos en 1 hora"
+        ></textarea>
+      </div>
+
+      <div class="button-group">
+        <button type="button" class="btn-enable" onclick="enableMaintenance()" id="btnEnable">
+          ✓ Activar
+        </button>
+        <button type="button" class="btn-disable" onclick="disableMaintenance()" id="btnDisable">
+          ✗ Desactivar
+        </button>
+        <button type="button" class="btn-check" onclick="checkStatus()" id="btnCheck">
+          ⓘ Ver Estado
+        </button>
+      </div>
+    </form>
+
+    <div class="status-box" id="statusBox">
+      <div class="status-title" id="statusTitle"></div>
+      <div class="status-message" id="statusMessage"></div>
+    </div>
+  </div>
+
+  <script>
+    // Detectar si estamos en localhost o en producción
+    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const API_BASE = isLocalhost ? 'http://localhost:3001' : 'https://amanwal.com';
+
+    function getToken() {
+      return document.getElementById('token').value.trim();
+    }
+
+    function getMessage() {
+      return document.getElementById('message').value.trim() || 'Sistema en mantenimiento';
+    }
+
+    function showStatus(title, message, type = 'info') {
+      const statusBox = document.getElementById('statusBox');
+      const statusTitle = document.getElementById('statusTitle');
+      const statusMessage = document.getElementById('statusMessage');
+
+      statusBox.className = `status-box show ${type}`;
+      statusTitle.textContent = title;
+      statusMessage.innerHTML = message;
+    }
+
+    function setButtonsDisabled(disabled) {
+      document.getElementById('btnEnable').disabled = disabled;
+      document.getElementById('btnDisable').disabled = disabled;
+      document.getElementById('btnCheck').disabled = disabled;
+    }
+
+    async function enableMaintenance() {
+      const token = getToken();
+      const message = getMessage();
+
+      if (!token) {
+        showStatus('❌ Error', 'Por favor ingresa el token admin', 'error');
+        return;
+      }
+
+      setButtonsDisabled(true);
+      showStatus('⏳ Activando...', 'Por favor espera', 'info');
+
+      try {
+        const response = await fetch(`${API_BASE}/api/admin/maintenance/enable`, {
+          method: 'POST',
+          headers: {
+            'x-admin-token': token,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ message }),
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          showStatus(
+            '✅ Éxito',
+            `Modo mantenimiento <strong>activado</strong><br>Mensaje: "${message}"`,
+            'success'
+          );
+        } else {
+          showStatus(
+            '❌ Error',
+            data.error || 'No se pudo activar el mantenimiento',
+            'error'
+          );
+        }
+      } catch (error) {
+        showStatus(
+          '❌ Error de conexión',
+          error.message,
+          'error'
+        );
+      } finally {
+        setButtonsDisabled(false);
+      }
+    }
+
+    async function disableMaintenance() {
+      const token = getToken();
+
+      if (!token) {
+        showStatus('❌ Error', 'Por favor ingresa el token admin', 'error');
+        return;
+      }
+
+      setButtonsDisabled(true);
+      showStatus('⏳ Desactivando...', 'Por favor espera', 'info');
+
+      try {
+        const response = await fetch(`${API_BASE}/api/admin/maintenance/disable`, {
+          method: 'POST',
+          headers: {
+            'x-admin-token': token,
+            'Content-Type': 'application/json',
+          },
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          showStatus(
+            '✅ Éxito',
+            'Modo mantenimiento <strong>desactivado</strong><br>El sitio está disponible para todos',
+            'success'
+          );
+        } else {
+          showStatus(
+            '❌ Error',
+            data.error || 'No se pudo desactivar el mantenimiento',
+            'error'
+          );
+        }
+      } catch (error) {
+        showStatus(
+          '❌ Error de conexión',
+          error.message,
+          'error'
+        );
+      } finally {
+        setButtonsDisabled(false);
+      }
+    }
+
+    async function checkStatus() {
+      const token = getToken();
+
+      if (!token) {
+        showStatus('❌ Error', 'Por favor ingresa el token admin', 'error');
+        return;
+      }
+
+      setButtonsDisabled(true);
+      showStatus('⏳ Verificando...', 'Por favor espera', 'info');
+
+      try {
+        const response = await fetch(`${API_BASE}/api/admin/maintenance`, {
+          headers: {
+            'x-admin-token': token,
+          },
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          const status = data.maintenance;
+          const estado = status.enabled ? '🔴 ACTIVO' : '🟢 INACTIVO';
+          const mensaje = status.message ? `Mensaje: "${status.message}"` : 'Sin mensaje personalizado';
+
+          showStatus(
+            `Estado del Mantenimiento: ${estado}`,
+            mensaje,
+            status.enabled ? 'error' : 'success'
+          );
+        } else {
+          showStatus(
+            '❌ Error',
+            data.error || 'No se pudo verificar el estado',
+            'error'
+          );
+        }
+      } catch (error) {
+        showStatus(
+          '❌ Error de conexión',
+          error.message,
+          'error'
+        );
+      } finally {
+        setButtonsDisabled(false);
+      }
+    }
+
+    // Permitir Enter en el token
+    document.getElementById('token').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        enableMaintenance();
+      }
+    });
+  </script>
+</body>
+</html>
