@@ -61,6 +61,16 @@ export const maintenanceMiddleware = (
 
   // Si es una petición de HTML/página, servir maintenance.html desde backend
   console.log('🔧 Modo mantenimiento - Página de mantenimiento mostrada');
+  
+  // Headers para evitar caching de página de mantenimiento en Cloudflare
+  res.set({
+    'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0, private',
+    'Pragma': 'no-cache',
+    'Expires': '0',
+    'CF-Cache-Status': 'BYPASS',
+    'Surrogate-Control': 'no-store',
+  });
+  
   const maintenancePath = path.join(__dirname, '../../maintenance.html');
   
   console.log(`📁 Buscando archivo en: ${maintenancePath}`);
