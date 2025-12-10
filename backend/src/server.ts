@@ -51,6 +51,11 @@ app.use((req: express.Request, res: express.Response, next: express.NextFunction
     return;
   }
   
+  // NUNCA interceptar rutas de API
+  if (req.path.startsWith('/api/')) {
+    return next();
+  }
+  
   // Si no tiene extensión, es probablemente una ruta SPA
   if (!path.extname(req.path)) {
     console.log(`🔄 SPA Fallback: ${req.path}`);
