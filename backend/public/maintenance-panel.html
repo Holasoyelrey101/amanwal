@@ -446,7 +446,7 @@
       showStatus('⏳ Activando...', 'Por favor espera', 'info');
 
       try {
-        const response = await fetch(`${API_BASE}/api/admin/maintenance/enable`, {
+        const response = await fetch(`${API_BASE}/api/maintenance/enable`, {
           method: 'POST',
           headers: {
             'x-admin-token': token,
@@ -493,7 +493,7 @@
       showStatus('⏳ Desactivando...', 'Por favor espera', 'info');
 
       try {
-        const response = await fetch(`${API_BASE}/api/admin/maintenance/disable`, {
+        const response = await fetch(`${API_BASE}/api/maintenance/disable`, {
           method: 'POST',
           headers: {
             'x-admin-token': token,
@@ -539,7 +539,7 @@
       showStatus('⏳ Verificando...', 'Por favor espera', 'info');
 
       try {
-        const response = await fetch(`${API_BASE}/api/admin/maintenance`, {
+        const response = await fetch(`${API_BASE}/api/maintenance`, {
           headers: {
             'x-admin-token': token,
           },
