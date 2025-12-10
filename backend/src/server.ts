@@ -37,6 +37,9 @@ app.use(maintenanceMiddleware);
 // Servir archivos estáticos (imágenes subidas)
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
+// Servir panel de mantenimiento
+app.use('/public', express.static(path.join(__dirname, '../public')));
+
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/cabins', cabinRoutes);
