@@ -59,13 +59,17 @@ export const maintenanceMiddleware = (
     });
   }
 
-  // Si es una petición de HTML/página, servir maintenance.html desde frontend/dist
+  // Si es una petición de HTML/página, servir maintenance.html desde backend
   console.log('🔧 Modo mantenimiento - Página de mantenimiento mostrada');
-  const maintenancePath = path.join(process.cwd(), '../frontend/dist/maintenance.html');
+  const maintenancePath = path.join(process.cwd(), 'maintenance.html');
+  
+  console.log(`📁 Buscando archivo en: ${maintenancePath}`);
   
   if (fs.existsSync(maintenancePath)) {
+    console.log('✅ Archivo maintenance.html encontrado, sirviendo...');
     res.status(503).sendFile(maintenancePath);
   } else {
+    console.log('❌ Archivo maintenance.html no encontrado en:', maintenancePath);
     // Fallback si no existe el archivo
     res.status(503).send(`
       <!DOCTYPE html>
@@ -78,6 +82,19 @@ export const maintenanceMiddleware = (
           body { font-family: system-ui; background: linear-gradient(135deg, #0a0e27 0%, #1a1a3e 50%, #0d1b2a 100%); 
                  color: #fff; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; }
           .container { text-align: center; max-width: 600px; }
+          h1 { font-size: 48px; margin-bottom: 20px; }
+          p { font-size: 18px; color: rgba(255,255,255,0.7); }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <h1>Enseguida volvemos</h1>
+          <p>Estamos realizando mantenimiento. Por favor intenta más tarde.</p>
+        </div>
+      </body>
+      </html>
+    `);
+  }
           h1 { font-size: 48px; margin-bottom: 20px; }
           p { font-size: 18px; color: rgba(255,255,255,0.7); }
         </style>
