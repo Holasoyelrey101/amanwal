@@ -14,9 +14,10 @@
 
     html, body {
       height: 100%;
-      background: #000;
+      background: linear-gradient(135deg, #0a0e27 0%, #1a1a3e 50%, #0d1b2a 100%);
       color: #fff;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif;
+      overflow-x: hidden;
     }
 
     body {
@@ -25,18 +26,41 @@
       justify-content: center;
       padding: 20px;
       min-height: 100vh;
+      position: relative;
+    }
+
+    /* Animated background elements */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at 20% 50%, rgba(100, 181, 246, 0.1) 0%, transparent 50%),
+                  radial-gradient(circle at 80% 80%, rgba(139, 92, 246, 0.08) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: 1;
     }
 
     .container {
       text-align: center;
-      max-width: 600px;
-      animation: slideIn 0.6s ease-out;
+      max-width: 650px;
+      animation: slideIn 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+      position: relative;
+      z-index: 2;
+      background: linear-gradient(135deg, rgba(20, 30, 60, 0.4) 0%, rgba(30, 20, 50, 0.2) 100%);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(100, 181, 246, 0.2);
+      border-radius: 24px;
+      padding: 60px 40px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
     }
 
     @keyframes slideIn {
       from {
         opacity: 0;
-        transform: translateY(30px);
+        transform: translateY(40px);
       }
       to {
         opacity: 1;
@@ -44,153 +68,219 @@
       }
     }
 
+    .icon-wrapper {
+      position: relative;
+      width: 120px;
+      height: 120px;
+      margin: 0 auto 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .icon-wrapper::before {
+      content: '';
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle, rgba(100, 181, 246, 0.3) 0%, transparent 70%);
+      border-radius: 50%;
+      animation: pulse-glow 3s ease-in-out infinite;
+    }
+
     .icon {
-      font-size: 80px;
-      margin-bottom: 30px;
-      animation: float 3s ease-in-out infinite;
-      opacity: 0.9;
+      font-size: 70px;
+      animation: float 3s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+      z-index: 1;
     }
 
     @keyframes float {
       0%, 100% { transform: translateY(0px); }
-      50% { transform: translateY(-20px); }
+      50% { transform: translateY(-15px); }
+    }
+
+    @keyframes pulse-glow {
+      0%, 100% { transform: scale(1); opacity: 0.5; }
+      50% { transform: scale(1.2); opacity: 0.3; }
     }
 
     h1 {
       font-size: 48px;
-      font-weight: 700;
-      letter-spacing: -1px;
-      margin-bottom: 15px;
-      background: linear-gradient(135deg, #fff 0%, rgba(255, 255, 255, 0.8) 100%);
+      font-weight: 800;
+      letter-spacing: -1.5px;
+      margin-bottom: 12px;
+      background: linear-gradient(135deg, #ffffff 0%, #90CAF9 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
+      line-height: 1.2;
     }
 
     .subtitle {
       font-size: 16px;
-      color: rgba(255, 255, 255, 0.7);
-      margin-bottom: 30px;
-      font-weight: 500;
+      color: #64B5F6;
+      margin-bottom: 24px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
     }
 
-    p {
+    .description {
       font-size: 16px;
-      color: rgba(255, 255, 255, 0.6);
+      color: rgba(255, 255, 255, 0.7);
       line-height: 1.8;
-      margin-bottom: 20px;
+      margin-bottom: 40px;
+      font-weight: 300;
     }
 
     .info-box {
-      background: linear-gradient(135deg, rgba(100, 181, 246, 0.15) 0%, rgba(100, 181, 246, 0.05) 100%);
-      border: 1px solid rgba(100, 181, 246, 0.2);
-      border-left: 4px solid #64B5F6;
-      padding: 20px;
+      background: linear-gradient(135deg, rgba(100, 181, 246, 0.12) 0%, rgba(100, 181, 246, 0.05) 100%);
+      border: 1px solid rgba(100, 181, 246, 0.25);
+      border-left: 3px solid #64B5F6;
+      padding: 24px 28px;
       margin: 40px 0;
-      border-radius: 12px;
+      border-radius: 16px;
       text-align: left;
       backdrop-filter: blur(10px);
+      transition: all 0.3s ease;
     }
 
-    .info-box strong {
+    .info-box:hover {
+      border-color: rgba(100, 181, 246, 0.4);
+      background: linear-gradient(135deg, rgba(100, 181, 246, 0.15) 0%, rgba(100, 181, 246, 0.08) 100%);
+    }
+
+    .info-box-title {
       color: #90CAF9;
       display: flex;
       align-items: center;
-      gap: 10px;
-      margin-bottom: 10px;
+      gap: 12px;
+      margin-bottom: 8px;
       font-size: 15px;
+      font-weight: 700;
     }
 
-    .info-box p {
+    .info-box-content {
       margin: 0;
       font-size: 14px;
-      color: rgba(255, 255, 255, 0.7);
+      color: rgba(255, 255, 255, 0.65);
+      line-height: 1.6;
     }
 
     .loader {
       display: flex;
       justify-content: center;
-      gap: 10px;
+      gap: 12px;
       margin: 50px 0;
+      height: 30px;
+      align-items: center;
     }
 
     .loader span {
-      width: 12px;
-      height: 12px;
-      background: #64B5F6;
+      width: 10px;
+      height: 10px;
+      background: linear-gradient(135deg, #64B5F6, #90CAF9);
       border-radius: 50%;
-      animation: pulse 1.4s infinite;
-      box-shadow: 0 0 20px rgba(100, 181, 246, 0.5);
+      animation: pulse-dot 1.4s ease-in-out infinite;
+      box-shadow: 0 0 15px rgba(100, 181, 246, 0.6);
     }
 
+    .loader span:nth-child(1) { animation-delay: 0s; }
     .loader span:nth-child(2) { animation-delay: 0.2s; }
     .loader span:nth-child(3) { animation-delay: 0.4s; }
 
-    @keyframes pulse {
+    @keyframes pulse-dot {
       0%, 100% { 
-        opacity: 0.3;
-        transform: scale(0.8);
+        opacity: 0.4;
+        transform: scale(0.8) translateY(0);
       }
       50% { 
         opacity: 1;
-        transform: scale(1);
+        transform: scale(1.1) translateY(-10px);
       }
     }
 
     .footer {
       margin-top: 50px;
       padding-top: 30px;
-      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      border-top: 1px solid rgba(100, 181, 246, 0.15);
       color: rgba(255, 255, 255, 0.5);
       font-size: 13px;
     }
 
-    .footer p {
+    .footer-text {
       margin: 0;
       font-size: 13px;
     }
 
-    .footer a {
+    .footer-link {
       color: #64B5F6;
       text-decoration: none;
       transition: all 0.3s ease;
       font-weight: 600;
+      position: relative;
     }
 
-    .footer a:hover {
+    .footer-link::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: linear-gradient(90deg, #64B5F6, #90CAF9);
+      transition: width 0.3s ease;
+    }
+
+    .footer-link:hover {
       color: #90CAF9;
-      text-decoration: underline;
     }
 
-    @media (max-width: 480px) {
+    .footer-link:hover::after {
+      width: 100%;
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        padding: 40px 28px;
+        border-radius: 20px;
+      }
+
       h1 {
-        font-size: 36px;
+        font-size: 38px;
       }
 
       .icon {
         font-size: 60px;
       }
 
-      p {
-        font-size: 14px;
+      .description {
+        font-size: 15px;
+      }
+
+      .info-box {
+        padding: 20px 24px;
       }
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <div class="icon">⚙️</div>
+    <div class="icon-wrapper">
+      <div class="icon">⚙️</div>
+    </div>
+    
     <h1>Enseguida volvemos</h1>
     <p class="subtitle">Sistema en mantenimiento</p>
 
-    <p>Estamos realizando mejoras para ofrecerte una mejor experiencia en Amanwal.</p>
+    <p class="description">Estamos realizando mejoras y optimizaciones para ofrecerte una experiencia excepcional en Amanwal.</p>
 
     <div class="info-box">
-      <strong>
-        <i class="fas fa-clock"></i>
-        Tiempo estimado:
-      </strong>
-      <p>Menos de una hora. Intenta más tarde.</p>
+      <div class="info-box-title">
+        <i class="fas fa-hourglass-half"></i>
+        Tiempo estimado
+      </div>
+      <p class="info-box-content">Menos de una hora. Intenta acceder más tarde.</p>
     </div>
 
     <div class="loader">
@@ -200,7 +290,7 @@
     </div>
 
     <div class="footer">
-      <p>Si tienes alguna pregunta, contacta con <a href="mailto:cabanasamanwal@gmail.com">soporte</a></p>
+      <p class="footer-text">Si tienes alguna pregunta, contacta con <a href="mailto:cabanasamanwal@gmail.com" class="footer-link">soporte</a></p>
     </div>
   </div>
 </body>
