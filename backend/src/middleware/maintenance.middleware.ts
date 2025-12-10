@@ -16,15 +16,15 @@ export const maintenanceMiddleware = (
   res: Response,
   next: NextFunction
 ) => {
-  // Rutas que siempre deben estar disponibles
-  const allowedRoutes = [
+  // Rutas que SIEMPRE deben estar disponibles (incluso en mantenimiento)
+  const alwaysAllowedRoutes = [
     '/api/maintenance',
     '/api/health',
     '/maintenance.html',
   ];
 
-  // Verificar si la ruta está permitida
-  if (allowedRoutes.some((route) => req.path.startsWith(route))) {
+  // Verificar si la ruta está siempre permitida
+  if (alwaysAllowedRoutes.some((route) => req.path.startsWith(route))) {
     return next();
   }
 
@@ -32,23 +32,35 @@ export const maintenanceMiddleware = (
   const isMaintenanceMode = fs.existsSync(MAINTENANCE_FILE);
 
   if (!isMaintenanceMode) {
+    // No está en mantenimiento, permitir acceso a todos
     return next();
   }
 
-  // Verificar si el usuario es admin (mediante token especial en header o query)
+  // ESTÁ EN MANTENIMIENTO - Verificar si el usuario tiene token admin válido
   const adminToken = process.env.ADMIN_MAINTENANCE_TOKEN;
   const tokenFromHeader = req.headers['x-admin-token'] as string;
   const tokenFromQuery = req.query.token as string;
-  const token = tokenFromHeader || tokenFromQuery;
+  const tokenFromCookie = req.cookies?.maintenanceToken;
+  const token = tokenFromHeader || tokenFromQuery || tokenFromCookie;
 
   if (adminToken && token === adminToken) {
-    // Admin puede acceder normalmente
-    console.log('✅ Admin token válido - Acceso permitido');
+    // Token válido - permitir acceso a TODO
+    console.log('✅ Token admin válido en mantenimiento - Acceso permitido');
     return next();
   }
 
-  // Si no es admin, mostrar página de mantenimiento
-  console.log('🔧 Modo mantenimiento activo - Usuario sin acceso');
+  // Sin token válido en modo mantenimiento
+  // Si es una petición de API, devolver error JSON
+  if (req.path.startsWith('/api/')) {
+    console.log('🔧 Modo mantenimiento - API bloqueada');
+    return res.status(503).json({
+      error: 'Sistema en mantenimiento',
+      message: 'El sitio está en mantenimiento. Intenta más tarde.',
+    });
+  }
+
+  // Si es una petición de HTML/página, servir maintenance.html
+  console.log('🔧 Modo mantenimiento - Página de mantenimiento mostrada');
   res.status(503).sendFile(path.join(process.cwd(), 'maintenance.html'));
 };
 

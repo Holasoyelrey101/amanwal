@@ -329,12 +329,14 @@
         const data = await response.json();
 
         if (response.ok) {
+          // Guardar el token en una cookie para acceso posterior
+          document.cookie = `maintenanceToken=${token}; path=/; max-age=86400`;
+          
           showStatus(
             '✅ Éxito',
             `Modo mantenimiento <strong>activado</strong><br>Mensaje: "${message}"<br><br>
-            <strong>Para acceder al sitio como admin:</strong><br>
-            Agrega esto a tu URL: <code>?token=${token}</code><br>
-            Ejemplo: <code>https://amanwal.com?token=${token}</code>`,
+            <strong>Tu acceso está guardado en una cookie.</strong><br>
+            Puedes navegar normalmente en el sitio.`,
             'success'
           );
         } else {
