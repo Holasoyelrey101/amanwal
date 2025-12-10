@@ -13,6 +13,7 @@ import paymentRoutes from './routes/payment.routes';
 import supportRoutes from './routes/support.routes';
 import uploadRoutes from './routes/upload.routes';
 import { apiRateLimiter } from './middleware/rateLimiter.middleware';
+import { maintenanceMiddleware } from './middleware/maintenance.middleware';
 import { startExpiredBookingCleanup } from './services/expiredBookingCleanup';
 
 dotenv.config();
@@ -29,6 +30,9 @@ app.use(express.urlencoded({ extended: true, limit: '100mb' }));
 
 // Aplicar rate limiter a todas las rutas API
 app.use('/api/', apiRateLimiter);
+
+// Middleware de modo mantenimiento (aplicar ANTES de las rutas)
+app.use(maintenanceMiddleware);
 
 // Servir archivos estáticos (imágenes subidas)
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
