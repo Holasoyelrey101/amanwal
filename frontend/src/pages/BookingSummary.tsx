@@ -58,7 +58,6 @@ export const BookingSummary: React.FC = () => {
 
   const handleCompleteBooking = async () => {
     try {
-      
       // Paso 1: Crear la reserva
       const bookingResponse = await apiClient.post('/bookings', {
         cabinId: state.cabinId,
@@ -71,7 +70,11 @@ export const BookingSummary: React.FC = () => {
       const bookingId = bookingData.id;
       console.log('✅ Reserva creada exitosamente:', bookingId);
 
-      // Paso 2: Crear la orden de pago en Flow
+      // Paso 2: Iniciar el proceso de pago (establece expiración a 5 minutos)
+      const paymentInitResponse = await apiClient.patch(`/bookings/${bookingId}/initiate-payment`);
+      console.log('✅ Pago iniciado, expira en:', paymentInitResponse.data.expiresIn, 'segundos');
+
+      // Paso 3: Crear la orden de pago en Flow
       const paymentResponse = await apiClient.post('/payments/create', {
         bookingId: bookingId
       });
@@ -79,15 +82,16 @@ export const BookingSummary: React.FC = () => {
       const paymentData = paymentResponse.data;
       console.log('✅ Orden de pago creada:', paymentData.flowOrder);
 
-      // Paso 3: Redirigir a Flow para completar el pago
+      // Paso 4: Redirigir a Flow para completar el pago
       if (paymentData.redirectUrl) {
         window.location.href = paymentData.redirectUrl;
       } else {
         alert('Error: No se recibió URL de pago');
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error al completar la reserva:', err);
-      alert('Error al realizar la reserva');
+      const errorMsg = err.response?.data?.error || 'Error al realizar la reserva';
+      alert(errorMsg);
     }
   };
 

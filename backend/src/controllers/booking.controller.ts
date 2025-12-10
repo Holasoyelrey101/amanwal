@@ -15,8 +15,14 @@ export const createBooking = async (req: AuthRequest, res: Response): Promise<vo
     const userId = req.user?.id;
     const { cabinId, checkIn, checkOut } = req.body;
 
+    console.log('📝 Crear booking - Body recibido:', { cabinId, checkIn, checkOut, userId });
+
     if (!cabinId || !checkIn || !checkOut) {
-      res.status(400).json({ error: 'Campos requeridos faltantes' });
+      console.error('❌ Campos faltantes:', { cabinId: !!cabinId, checkIn: !!checkIn, checkOut: !!checkOut });
+      res.status(400).json({ 
+        error: 'Campos requeridos faltantes',
+        received: { cabinId, checkIn, checkOut }
+      });
       return;
     }
 
