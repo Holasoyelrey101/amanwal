@@ -331,7 +331,10 @@
         if (response.ok) {
           showStatus(
             '✅ Éxito',
-            `Modo mantenimiento <strong>activado</strong><br>Mensaje: "${message}"`,
+            `Modo mantenimiento <strong>activado</strong><br>Mensaje: "${message}"<br><br>
+            <strong>Para acceder al sitio como admin:</strong><br>
+            Agrega esto a tu URL: <code>?token=${token}</code><br>
+            Ejemplo: <code>https://amanwal.com?token=${token}</code>`,
             'success'
           );
         } else {

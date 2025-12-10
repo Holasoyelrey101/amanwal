@@ -35,16 +35,20 @@ export const maintenanceMiddleware = (
     return next();
   }
 
-  // Verificar si el usuario es admin (mediante token especial)
+  // Verificar si el usuario es admin (mediante token especial en header o query)
   const adminToken = process.env.ADMIN_MAINTENANCE_TOKEN;
-  const token = req.headers['x-admin-token'] as string;
+  const tokenFromHeader = req.headers['x-admin-token'] as string;
+  const tokenFromQuery = req.query.token as string;
+  const token = tokenFromHeader || tokenFromQuery;
 
   if (adminToken && token === adminToken) {
     // Admin puede acceder normalmente
+    console.log('✅ Admin token válido - Acceso permitido');
     return next();
   }
 
   // Si no es admin, mostrar página de mantenimiento
+  console.log('🔧 Modo mantenimiento activo - Usuario sin acceso');
   res.status(503).sendFile(path.join(process.cwd(), 'maintenance.html'));
 };
 
