@@ -37,8 +37,10 @@ app.use(maintenanceMiddleware);
 // Servir archivos estáticos (imágenes subidas)
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
-// Servir panel de mantenimiento
-app.use('/public', express.static(path.join(__dirname, '../public')));
+// Servir panel de mantenimiento ANTES de las rutas de API
+app.get('/maintenance-panel', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/maintenance-panel.html'));
+});
 
 // Routes
 app.use('/api/auth', authRoutes);
