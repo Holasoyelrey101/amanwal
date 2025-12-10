@@ -38,6 +38,34 @@ app.use('/api/', apiRateLimiter);
 // Middleware de modo mantenimiento (aplicar ANTES de las rutas)
 app.use(maintenanceMiddleware);
 
+// SPA fallback middleware - ANTES de express.static
+// Esto intercepta requests y sirve index.html si no tiene extensión
+app.use((req: express.Request, res: express.Response, next: express.NextFunction) => {
+  // Solo para GET requests
+  if (req.method !== 'GET') {
+    return next();
+  }
+  
+  // Si ya respondimos (mantenimiento), no hacer nada
+  if (res.headersSent) {
+    return;
+  }
+  
+  // Si no tiene extensión, es probablemente una ruta SPA
+  if (!path.extname(req.path)) {
+    console.log(`🔄 SPA Fallback: ${req.path}`);
+    return res.sendFile(path.join(__dirname, '../../frontend/dist/index.html'), (err) => {
+      if (err) {
+        console.error('Error sendFile:', err.message);
+        return next();
+      }
+    });
+  }
+  
+  // Si tiene extensión, pasar al siguiente middleware (probablemente express.static)
+  next();
+});
+
 // Routes API
 app.use('/api/auth', authRoutes);
 app.use('/api/cabins', cabinRoutes);
@@ -57,29 +85,6 @@ app.get('/api/health', (req, res) => {
 
 // Servir archivos estáticos (imágenes subidas)
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
-
-// SPA fallback middleware - ANTES de express.static
-// Esto intercepta requests y sirve index.html si no tiene extensión
-app.use((req: express.Request, res: express.Response, next: express.NextFunction) => {
-  // Solo para GET requests
-  if (req.method !== 'GET') {
-    return next();
-  }
-  
-  // Si no tiene extensión, es probablemente una ruta SPA
-  if (!path.extname(req.path)) {
-    console.log(`🔄 SPA Fallback: ${req.path}`);
-    return res.sendFile(path.join(__dirname, '../../frontend/dist/index.html'), (err) => {
-      if (err) {
-        console.error('Error sendFile:', err.message);
-        return next();
-      }
-    });
-  }
-  
-  // Si tiene extensión, pasar al siguiente middleware (probablemente express.static)
-  next();
-});
 
 // Servir archivos estáticos del frontend
 app.use(express.static(path.join(__dirname, '../../frontend/dist')));
