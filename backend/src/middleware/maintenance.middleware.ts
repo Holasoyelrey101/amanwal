@@ -59,9 +59,38 @@ export const maintenanceMiddleware = (
     });
   }
 
-  // Si es una petición de HTML/página, servir maintenance.html
+  // Si es una petición de HTML/página, servir maintenance.html desde frontend/dist
   console.log('🔧 Modo mantenimiento - Página de mantenimiento mostrada');
-  res.status(503).sendFile(path.join(process.cwd(), 'maintenance.html'));
+  const maintenancePath = path.join(process.cwd(), '../frontend/dist/maintenance.html');
+  
+  if (fs.existsSync(maintenancePath)) {
+    res.status(503).sendFile(maintenancePath);
+  } else {
+    // Fallback si no existe el archivo
+    res.status(503).send(`
+      <!DOCTYPE html>
+      <html lang="es">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Mantenimiento</title>
+        <style>
+          body { font-family: system-ui; background: linear-gradient(135deg, #0a0e27 0%, #1a1a3e 50%, #0d1b2a 100%); 
+                 color: #fff; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; }
+          .container { text-align: center; max-width: 600px; }
+          h1 { font-size: 48px; margin-bottom: 20px; }
+          p { font-size: 18px; color: rgba(255,255,255,0.7); }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <h1>Enseguida volvemos</h1>
+          <p>Estamos realizando mantenimiento. Por favor intenta más tarde.</p>
+        </div>
+      </body>
+      </html>
+    `);
+  }
 };
 
 /**
